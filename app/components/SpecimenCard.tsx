@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, DragEvent, ReactElement } from "react";
+import { ChangeEvent, DragEvent, ReactElement, useRef } from "react";
 import { phashHexToBin } from "../lib/phash";
 import { shorten, type AnalysisStage } from "./shared";
 
@@ -10,6 +10,7 @@ export function SpecimenCard({ file, previewUrl, embeddingSize, quality, phash, 
   file: File | null; previewUrl: string; embeddingSize: number | null; quality: number | null; phash: string;
   isDragging: boolean; analysisStage: AnalysisStage; searchId: string; onChange: (event: ChangeEvent<HTMLInputElement>) => void; onDrop: (event: DragEvent<HTMLDivElement>) => void; onDragOver: (event: DragEvent<HTMLDivElement>) => void; onDragLeave: () => void;
 }): ReactElement {
+  const dropInputRef = useRef<HTMLInputElement>(null);
   let bits = "";
   try { if (phash) bits = phashHexToBin(phash); } catch { bits = ""; }
   const setBits = bits ? bits.split("").filter((b) => b === "1").length : 0;
@@ -38,9 +39,10 @@ export function SpecimenCard({ file, previewUrl, embeddingSize, quality, phash, 
     </div>
     <div className="scan-grid"><div>
     <div className={`specimen-frame ${isDragging ? "dragging" : ""} ${previewUrl ? "has-image" : ""}`} onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave}>
-      {previewUrl ? <img src={previewUrl} alt="Detected face crop" /> : <label className="upload-prompt">
-        <span className="upload-glyph">+</span><b>DROP A FACE IMAGE</b><small>JPG, PNG, WEBP · processed in memory</small><input type="file" accept="image/*" onChange={onChange} />
-      </label>}
+      {previewUrl ? <img src={previewUrl} alt="Detected face crop" /> : <button type="button" className="upload-prompt" onClick={() => dropInputRef.current?.click()}>
+        <span className="upload-glyph">+</span><b>DROP A FACE IMAGE</b><small>JPG, PNG, WEBP · processed in memory</small>
+      </button>}
+      <input ref={dropInputRef} type="file" accept="image/*" hidden onChange={onChange} />
       <i className="ret tl" aria-hidden="true" /><i className="ret tr" aria-hidden="true" /><i className="ret bl" aria-hidden="true" /><i className="ret br" aria-hidden="true" />
       {previewUrl && <span className="face-lock">FACE CROP LOCKED</span>}
       {previewUrl && <span className="stamp onphoto stamp-acq show">ACQUIRED</span>}

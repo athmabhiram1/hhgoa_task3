@@ -22,6 +22,7 @@ function readRoute(): RouteName {
 function routeHref(route: RouteName): string { return route === "home" ? "#/" : `#/${route}`; }
 
 function HomeRoute({ previewUrl, onFileChange, onOpen }: { previewUrl: string; onFileChange: (event: ChangeEvent<HTMLInputElement>) => void; onOpen: (route: RouteName) => void }): ReactElement {
+  const inputRef = useRef<HTMLInputElement>(null);
   return <section className="route on" id="r-home">
     <div className="wrap">
       <div className="hero">
@@ -38,7 +39,7 @@ function HomeRoute({ previewUrl, onFileChange, onOpen }: { previewUrl: string; o
             <span className="spec-tag">SPECIMEN №0001</span><span className="exhtag">EXHIBIT A<br /><b>INTAKE PHOTO</b></span>
             <div className={`ph ${previewUrl ? "has-img" : ""}`} title="Drop a photo on the specimen route, or open a case">{previewUrl ? <img src={previewUrl} alt="Uploaded specimen crop" /> : <div className="up-empty"><ImageUp size={24} /><span>OPEN A CASE<br />UPLOAD A SPECIMEN</span></div>}<i className="ret tl" /><i className="ret tr" /><i className="ret bl" /><i className="ret br" /></div>
             <div className="spec-cap"><span>EXHIBIT A — INTAKE PHOTO</span>{previewUrl && <span id="upReady">READY</span>}</div>
-            <div className="spec-cap home-upload"><label className="btn btn-p"><ImageUp size={13} />USE PHOTO<input type="file" accept="image/*" onChange={(event) => { onFileChange(event); onOpen("specimen"); }} /></label><span>Stays in this browser.</span></div>
+            <div className="spec-cap home-upload"><button type="button" className="btn btn-p" onClick={() => inputRef.current?.click()}><ImageUp size={13} />USE PHOTO</button><input ref={inputRef} type="file" accept="image/*" hidden onChange={(event) => { onFileChange(event); onOpen("specimen"); }} /><span>Stays in this browser.</span></div>
           </div>
           <div className="indexcard" aria-hidden="true"><div className="row"><span>CASE</span><b>LOCAL RUN</b></div><div className="row"><span>SUBJECT</span><b>UNVERIFIED</b></div><div className="row"><span>ANALYST</span><b>BROWSER</b></div><div className="row"><span>STATUS</span><b style={{ color: "var(--vermd)" }}>OPEN</b></div></div>
         </div>

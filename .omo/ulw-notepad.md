@@ -47,6 +47,9 @@ I'll stop right away when: cr7.jpg reaches VERIFIED then TAMPERED on the live pa
 - Parity pass: docket+drows+band, toasts mirror, ck1-4 checklist, tele rows, phash-64 bit chart, lucide icons (ScanFace/ArrowRight/Stamp/ShieldCheck/TriangleAlert/RotateCcw/Copy/Check). 7/7 served markers on 127.0.0.1 + localhost.
 - Port-3000 mystery solved: single IPv6 listener (PID 20588, prod server); an early probe hit it mid-boot and returned a marker-less shell — re-probe after warm = 7/7. Lesson: always re-probe; never trust one cold sample.
 - startprod "stuck" = server running by design (Ready + PID = done).
+- USER rewrite (uncommitted): proper hash routes HomeRoute/SpecimenRoute/SourcesRoute/ProofRoute + anchor-tab nav + live-only copy; fixture→none rename. Verified zero mocks, tsc+tests green, clean .next rebuild, served r-home + hash tabs. Committed effa2f4 (5 files).
+- Corrupted .next from build-vs-serve collision: kill server, rm .next, rebuild, re-serve. Never build while serving prod on Windows.
+- Fresh user chain: contract DEPLOYED (4984ch) at 0x5FbD — seal works live, no restart needed. backend :8000 + chain :8545 user-started and healthy.
 
 ## Scenario results
 - S1 happy: PASS — e2e GREEN, receipts search_id 6a9ebe754fa3ba27947f6b9e, tx 0xea20…, block 2, verified+tamperDetected true.

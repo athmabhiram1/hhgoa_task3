@@ -50,6 +50,8 @@ I'll stop right away when: cr7.jpg reaches VERIFIED then TAMPERED on the live pa
 - USER rewrite (uncommitted): proper hash routes HomeRoute/SpecimenRoute/SourcesRoute/ProofRoute + anchor-tab nav + live-only copy; fixture→none rename. Verified zero mocks, tsc+tests green, clean .next rebuild, served r-home + hash tabs. Committed effa2f4 (5 files).
 - Corrupted .next from build-vs-serve collision: kill server, rm .next, rebuild, re-serve. Never build while serving prod on Windows.
 - Fresh user chain: contract DEPLOYED (4984ch) at 0x5FbD — seal works live, no restart needed. backend :8000 + chain :8545 user-started and healthy.
+- Upload fix: label-wrapped file inputs replaced by real-button + inputRef/dropInputRef programmatic click (label activation was unreliable). Verified in served bundle; committed (user landed as 8bb5b71/2ea9b54).
+- "Tool execution aborted" = panel interrupted, NOT work lost: Start-Process servers detach and survive; silence after Ready = done. Continue = next message/task ping.
 
 ## Scenario results
 - S1 happy: PASS — e2e GREEN, receipts search_id 6a9ebe754fa3ba27947f6b9e, tx 0xea20…, block 2, verified+tamperDetected true.

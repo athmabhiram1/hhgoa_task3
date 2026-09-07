@@ -29,6 +29,8 @@
 .drow p { overflow-wrap: anywhere; }
 .route-single { max-width: 880px; }
 .route-single .specimen-wrap .indexcard { margin: 14px 0 0; }
+.plain > .mono { white-space: nowrap; flex: none; }
+#r-specimen .exhtag { display: none; }
 
 .specimen-panel { margin-top: 0; }
 .pipeline-action { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--hair); color: var(--bonemut); font: 500 9px var(--mono); letter-spacing: .1em; text-align: center; }

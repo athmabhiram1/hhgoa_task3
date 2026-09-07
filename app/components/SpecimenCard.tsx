@@ -7,9 +7,9 @@ import { shorten, type AnalysisStage } from "./shared";
 
 type CheckState = "idle" | "busy" | "done";
 
-export function SpecimenCard({ file, previewUrl, embeddingSize, quality, phash, isDragging, analysisStage, searchId, onChange, onDrop, onDragOver, onDragLeave }: {
+export function SpecimenCard({ file, previewUrl, embeddingSize, quality, phash, isDragging, analysisStage, searchId, bare, onChange, onDrop, onDragOver, onDragLeave }: {
   file: File | null; previewUrl: string; embeddingSize: number | null; quality: number | null; phash: string;
-  isDragging: boolean; analysisStage: AnalysisStage; searchId: string; onChange: (event: ChangeEvent<HTMLInputElement>) => void; onDrop: (event: DragEvent<HTMLDivElement>) => void; onDragOver: (event: DragEvent<HTMLDivElement>) => void; onDragLeave: () => void;
+  isDragging: boolean; analysisStage: AnalysisStage; searchId: string; bare?: boolean; onChange: (event: ChangeEvent<HTMLInputElement>) => void; onDrop: (event: DragEvent<HTMLDivElement>) => void; onDragOver: (event: DragEvent<HTMLDivElement>) => void; onDragLeave: () => void;
 }): ReactElement {
   const dropInputRef = useRef<HTMLInputElement>(null);
   let bits = "";
@@ -34,7 +34,7 @@ export function SpecimenCard({ file, previewUrl, embeddingSize, quality, phash, 
     "04": "Looking for this same face on the configured public provider.",
   };
   const hasSearchResult = analysisStage === "complete" && Boolean(searchId);
-  return <article className="evidence-card specimen-card" id="intake">
+  return <article className={`evidence-card specimen-card${bare ? " specimen-card--route" : ""}`} id="intake">
     <div className="specimen-wrap">
     <i className="tape tl" aria-hidden="true" /><i className="tape tr" aria-hidden="true" />
     <span className="spec-tag">SPECIMEN №0001</span>
@@ -46,6 +46,7 @@ export function SpecimenCard({ file, previewUrl, embeddingSize, quality, phash, 
       <div><span>QUALITY / pHASH</span><b>{quality !== null ? quality.toFixed(2) : "—"} <em>·</em> {phash ? shorten(phash, 8, 6) : "—"}</b></div>
     </div>
     <div className="scan-grid"><div>
+    <div className="polaroid">
     <div className={`specimen-frame ${isDragging ? "dragging" : ""} ${previewUrl ? "has-image" : ""}`} onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave}>
       {previewUrl ? <img src={previewUrl} alt="Detected face crop" /> : <button type="button" className="upload-prompt" onClick={() => dropInputRef.current?.click()}>
         <span className="upload-glyph">+</span><b>DROP A FACE IMAGE</b><small>JPG, PNG, WEBP · processed in memory</small>
@@ -58,6 +59,7 @@ export function SpecimenCard({ file, previewUrl, embeddingSize, quality, phash, 
     <div className="spec-cap">
       <span>EXHIBIT A — INTAKE PHOTO</span>
       {previewUrl ? <span id="upReady">READY</span> : <span>WAITING</span>}
+    </div>
     </div>
     <dl className="tele">
       <div><dt>QUALITY METRIC</dt><dd><b>{quality !== null ? quality.toFixed(2) : "0.00"}</b>{quality !== null && <i className="mini">PASSED</i>}</dd></div>

@@ -24,6 +24,13 @@
    card. Offsets kept small so it never crosses the viewport edge (the global
    <=1000px rule hides it entirely on narrow screens). */
 .specimen-wrap .indexcard { position: static; transform: rotate(.6deg); margin: 14px 14px 0; width: auto; z-index: 1; animation: none; }
+.specimen-card--route { background: transparent; border: 0; box-shadow: none; color: var(--bone); }
+.specimen-card--route .card-kicker { color: var(--bonemut); border-color: var(--hair); }
+.specimen-card--route .spec-cap { color: var(--bonemut); }
+.specimen-card--route .specimen-meta > div { border-color: var(--hair); }
+.specimen-card--route .specimen-meta span { color: var(--bonemut); }
+.specimen-card--route .specimen-meta b { color: var(--bone); }
+.specimen-card--route .specimen-meta em { color: var(--verm); }
 .sybil-app { overflow-x: clip; }
 .drow > div { min-width: 0; }
 .drow p { overflow-wrap: anywhere; }

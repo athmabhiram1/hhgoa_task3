@@ -64,7 +64,7 @@ function SpecimenRoute({ file, previewUrl, embeddingSize, quality, phash, isDrag
     <div className="pg-k">01 // SPECIMEN — FACE INTAKE</div><div className="pg-row"><h2 className="pg-t">Measure the face.</h2><button className="btn" disabled={!file || analysisStage === "detecting" || analysisStage === "encoding" || analysisStage === "searching"} onClick={onRerun}><RefreshCw size={13} />RE-RUN THE SCAN</button></div>
     <p className="pg-s">We turn the photo into something a computer can compare. The checklist runs live, in order, and stops visibly when a provider is unavailable.</p>
     <div className="plain"><span className="mono">IN PLAIN TERMS</span><span>The computer <b>finds the face</b>, checks the photo is <b>sharp enough to trust</b>, then boils it down to <b>512 numbers</b>.</span></div>
-    <div className="scan-grid"><SpecimenCard file={file} previewUrl={previewUrl} embeddingSize={embeddingSize} quality={quality} phash={phash} isDragging={isDragging} analysisStage={analysisStage} searchId={searchId} onChange={onChange} onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} /></div>
+    <div className="scan-grid"><SpecimenCard file={file} previewUrl={previewUrl} embeddingSize={embeddingSize} quality={quality} phash={phash} isDragging={isDragging} analysisStage={analysisStage} searchId={searchId} bare onChange={onChange} onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave} /></div>
   </div></section>;
 }
 

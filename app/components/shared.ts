@@ -13,6 +13,7 @@ export type Candidate = {
 
 export type Notice = { kind: "info" | "success" | "error"; text: string } | null;
 export type WorkflowState = "idle" | "analyzing" | "sources" | "anchoring" | "sealed" | "verifying" | "verified" | "tampered";
+export type AnalysisStage = "idle" | "detecting" | "encoding" | "searching" | "complete" | "error";
 export type Manifest = ReturnType<typeof manifestForAnchor>;
 export type AnchorReceipt = { txHash: string; blockNumber: number; digest: string; manifest: Manifest };
 export type Verification = { kind: "verified" | "tampered"; expected: string; computed: string; onChainUrl: string; checkedAt: string };

@@ -22,7 +22,7 @@ export function SourceBoard({ candidates, selectedId, searchId, provider, workfl
     if (!searchId) return;
     try { await navigator.clipboard.writeText(searchId); setCopied(true); setTimeout(() => setCopied(false), 1600); } catch { setCopied(false); }
   }
-  return <article className="evidence-card source-card" id="sources">
+  return <article className="evidence-card source-card" id="sources-board">
     <div className="card-heading"><div><div className="card-kicker"><span>02 / DISCOVERY</span></div><h2>Indexed sources</h2></div><span className={`provider-chip ${providerTone(provider)}`}>{provider || "NO PROVIDER"}</span></div>
     <div className="source-meta"><span>SEARCH ID</span><b>{searchId ? shorten(searchId, 12, 8) : "—"}</b><button className={`source-copy-btn${copied ? " copied" : ""}`} disabled={!searchId} onClick={copySearchId}>{copied ? <Check size={10} /> : <Copy size={10} />}{copied ? "COPIED" : "COPY"}</button><span className="source-count">{candidates.length ? `${candidates.length} results` : "No results"}</span></div>
     <div className="q-chip source-query"><span className="dot verm pulse" />QUERY <b>{searchId ? shorten(searchId, 10, 6) : "—"}</b><span className="source-query-domain">· DOMAIN SET: SOCIAL + WEB</span></div>

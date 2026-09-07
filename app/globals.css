@@ -229,21 +229,26 @@ h1 em .scrib path{fill:none;stroke:var(--verm);stroke-width:3;stroke-linecap:rou
 .panel{background:var(--bench2);border:1px solid var(--hair);border-radius:3px;overflow:hidden}
 .p-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid var(--hair);font:600 9.5px var(--mono);letter-spacing:.18em;color:var(--bonedim)}
 .p-head .st{display:flex;align-items:center;gap:7px;color:var(--bonemut);letter-spacing:.14em}
+.p-head .st.pipeline-status.error{color:var(--verm)}
 .p-progress{height:2px;background:#241E13}
 .p-progress i{display:block;height:100%;width:0;background:var(--verm);transition:width .55s cubic-bezier(.4,0,.2,1),background .4s}
 .p-progress.full i{background:var(--seal)}
 .p-body{padding:16px}
 .cklist{list-style:none}
-.ck{display:flex;gap:14px;padding:15px 2px;border-bottom:1px solid var(--hair);opacity:.38;transition:opacity .35s}
+.ck{display:flex;gap:14px;padding:15px 2px;border-bottom:1px solid var(--hair);opacity:.58;transition:opacity .35s,background .25s}
 .ck:last-child{border-bottom:0}
-.ck.busy,.ck.done{opacity:1}
+.ck.busy,.ck.done{opacity:1;background:rgba(232,73,46,.035)}
 .ck-n{font:400 22px var(--serif);color:#5A4F36;width:34px;flex:none;line-height:1.2;transition:color .3s}
 .ck.busy .ck-n{color:var(--verm)}
 .ck.done .ck-n{color:var(--seal)}
 .ck-tx{flex:1;min-width:0}
 .ck-tx b{display:block;font-size:13.5px;letter-spacing:.01em}
+.ck.busy .ck-tx b{color:var(--bone)}
+.ck.done .ck-tx b{color:var(--bone)}
 .ck-tx .p{display:block;font-size:12px;color:var(--bonedim);margin-top:4px;line-height:1.6}
 .ck-tx .t{display:block;font:500 9px var(--mono);letter-spacing:.08em;color:var(--bonemut);margin-top:7px;min-height:11px}
+.ck.busy .ck-tx .t{color:var(--verm)}
+.ck.done .ck-tx .t{color:var(--seal)}
 .ck-ic{width:20px;flex:none;display:flex;justify-content:flex-end;padding-top:3px}
 .spin{width:12px;height:12px;border-radius:50%;border:2px solid #3A331F;border-top-color:var(--verm);animation:rot .7s linear infinite}
 @keyframes rot{to{transform:rotate(360deg)}}

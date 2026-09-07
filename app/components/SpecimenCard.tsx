@@ -31,6 +31,12 @@ export function SpecimenCard({ file, previewUrl, embeddingSize, quality, phash, 
     <span className="spec-tag">SPECIMEN №0001</span>
     <span className="exhtag">EXHIBIT A<br /><b>INTAKE PHOTO</b></span>
     <div className="card-kicker"><span>01 / INTAKE</span><span className="card-status">{file ? "READY" : "WAITING"}</span></div>
+    <div className="specimen-meta">
+      <div><span>FILE</span><b>{file?.name ?? "No specimen selected"}</b></div>
+      <div><span>ENCODER</span><b>{embeddingSize ? `Face embedding · ${embeddingSize}-d` : "Not run"}</b></div>
+      <div><span>QUALITY / pHASH</span><b>{quality !== null ? quality.toFixed(2) : "—"} <em>·</em> {phash ? shorten(phash, 8, 6) : "—"}</b></div>
+    </div>
+    <div className="scan-grid"><div>
     <div className={`specimen-frame ${isDragging ? "dragging" : ""} ${previewUrl ? "has-image" : ""}`} onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave}>
       {previewUrl ? <img src={previewUrl} alt="Detected face crop" /> : <label className="upload-prompt">
         <span className="upload-glyph">+</span><b>DROP A FACE IMAGE</b><small>JPG, PNG, WEBP · processed in memory</small><input type="file" accept="image/*" onChange={onChange} />
@@ -43,22 +49,6 @@ export function SpecimenCard({ file, previewUrl, embeddingSize, quality, phash, 
       <span>EXHIBIT A — INTAKE PHOTO</span>
       {previewUrl ? <span id="upReady">READY</span> : <span>WAITING</span>}
     </div>
-    <div className="specimen-meta">
-      <div><span>FILE</span><b>{file?.name ?? "No specimen selected"}</b></div>
-      <div><span>ENCODER</span><b>{embeddingSize ? `Face embedding · ${embeddingSize}-d` : "Not run"}</b></div>
-      <div><span>QUALITY / pHASH</span><b>{quality !== null ? quality.toFixed(2) : "—"} <em>·</em> {phash ? shorten(phash, 8, 6) : "—"}</b></div>
-    </div>
-    <div className="indexcard" aria-hidden="true">
-      <div className="row"><span>FILE</span><b>{file?.name ?? "—"}</b></div>
-      <div className="row"><span>ENCODER</span><b>{embeddingSize ? `${embeddingSize}-d` : "—"}</b></div>
-      <div className="row"><span>QUALITY</span><b>{quality !== null ? quality.toFixed(2) : "—"}</b></div>
-      <div className="row"><span>STATUS</span><b>{previewUrl ? "ACQUIRED" : "OPEN"}</b></div>
-    </div>
-    <div className="panel specimen-panel" aria-live="polite">
-      <div className="p-head"><span>INTAKE PIPELINE — LIVE</span><span className={`st pipeline-status ${analysisStage === "error" ? "error" : ""}`}>{pipelineStatus}</span></div>
-      <div className={`p-progress${progress >= 100 ? " full" : ""}`}><i style={{ width: `${progress}%` }} /></div>
-      <div className="p-body"><ul className="cklist">{checks.map((c) => <li className={`ck ${c.state === "idle" ? "" : c.state}`} key={c.n}><span className="ck-n">{c.n}</span><div className="ck-tx"><b>{c.t}</b><span className="t">{c.sub}</span></div><span className="ck-ic">{c.state === "busy" ? <span className="spin" /> : c.state === "done" ? <svg className="tick" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg> : null}</span></li>)}</ul></div>
-    </div>
     <dl className="tele">
       <div><dt>QUALITY METRIC</dt><dd><b>{quality !== null ? quality.toFixed(2) : "0.00"}</b>{quality !== null && <i className="mini">PASSED</i>}</dd></div>
       <div><dt>MODEL</dt><dd>GHOSTFACENET · 512-d</dd></div>
@@ -68,6 +58,19 @@ export function SpecimenCard({ file, previewUrl, embeddingSize, quality, phash, 
       <div className="chart-h"><span>PHASH-64 BIT PATTERN</span><span>HAMMING SPACE</span></div>
       <div className="phbits">{bits ? bits.split("").map((b, i) => <i key={i} data-one={b} />) : <span className="phbits-empty">AWAITING SPECIMEN</span>}</div>
       <div className="spark-stats"><span>{bits ? `${setBits} / 64 BITS SET` : "—"}</span><span>64 dims</span></div>
+    </div>
+    </div><div>
+    <div className="panel specimen-panel" aria-live="polite">
+      <div className="p-head"><span>INTAKE PIPELINE — LIVE</span><span className={`st pipeline-status ${analysisStage === "error" ? "error" : ""}`}>{pipelineStatus}</span></div>
+      <div className={`p-progress${progress >= 100 ? " full" : ""}`}><i style={{ width: `${progress}%` }} /></div>
+      <div className="p-body"><ul className="cklist">{checks.map((c) => <li className={`ck ${c.state === "idle" ? "" : c.state}`} key={c.n}><span className="ck-n">{c.n}</span><div className="ck-tx"><b>{c.t}</b><span className="t">{c.sub}</span></div><span className="ck-ic">{c.state === "busy" ? <span className="spin" /> : c.state === "done" ? <svg className="tick" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg> : null}</span></li>)}</ul></div>
+    </div>
+    </div></div>
+    <div className="indexcard" aria-hidden="true">
+      <div className="row"><span>FILE</span><b>{file?.name ?? "—"}</b></div>
+      <div className="row"><span>ENCODER</span><b>{embeddingSize ? `${embeddingSize}-d` : "—"}</b></div>
+      <div className="row"><span>QUALITY</span><b>{quality !== null ? quality.toFixed(2) : "—"}</b></div>
+      <div className="row"><span>STATUS</span><b>{previewUrl ? "ACQUIRED" : "OPEN"}</b></div>
     </div>
     </div>
   </article>;

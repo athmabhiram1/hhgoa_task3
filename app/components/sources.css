@@ -20,11 +20,11 @@
 /* --- provider-chip tones ----------------------------------------------------
    SerpApi Lens  -> green  (--seal)   : genuine primary provider
    Vision fallbk -> amber  (--ochre)  : degraded but genuine fallback
-   fixture/none  -> neutral (--hair2) : mock / no provider yet
+   none          -> neutral (--hair2) : no live provider result yet
    .provider-chip.provider-chip--* (0,2,0) beats base .provider-chip (0,1,0). */
 .provider-chip.provider-chip--lens    { border-color: var(--seal);  color: #73C99B;        background: rgba(30,122,74,.12); }
 .provider-chip.provider-chip--vision  { border-color: var(--ochre); color: var(--ochre);   background: rgba(176,124,16,.14); }
-.provider-chip.provider-chip--fixture { border-color: var(--hair2); color: var(--bonemut); background: transparent; }
+.provider-chip.provider-chip--none { border-color: var(--hair2); color: var(--bonemut); background: transparent; }
 
 /* --- q-chip QUERY row -------------------------------------------------------
    Live query context, bound to the real search_id (never a hardcoded value).

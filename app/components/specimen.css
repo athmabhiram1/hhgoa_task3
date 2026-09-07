@@ -14,10 +14,6 @@
 /* Wrap lets the index card sit BEHIND the card (paper peeking out), matching
    the prototype's hero-right stacking (spec-card z2 over indexcard z1). */
 .specimen-wrap { position: relative; min-width: 0; z-index: 1; }
-.specimen-wrap .specimen-card {
-  position: relative; z-index: 2; overflow: visible;
-  animation: specimenDrop .8s cubic-bezier(.2, 1.15, .3, 1) .25s both;
-}
 
 /* Tape strips + SPECIMEN tag must sit above the card-kicker strip. */
 .specimen-wrap .tape { z-index: 4; }
@@ -27,7 +23,12 @@
 /* Index card: real props only, em-dash for gaps; hangs bottom-left behind the
    card. Offsets kept small so it never crosses the viewport edge (the global
    <=1000px rule hides it entirely on narrow screens). */
-.specimen-wrap .indexcard { left: -10px; bottom: -22px; z-index: 1; }
+.specimen-wrap .indexcard { position: static; transform: rotate(.6deg); margin: 14px 14px 0; width: auto; z-index: 1; animation: none; }
+.sybil-app { overflow-x: clip; }
+.drow > div { min-width: 0; }
+.drow p { overflow-wrap: anywhere; }
+.route-single { max-width: 880px; }
+.route-single .specimen-wrap .indexcard { margin: 14px 0 0; }
 
 .specimen-panel { margin-top: 34px; }
 .phbits { display: grid; grid-template-columns: repeat(32, 1fr); gap: 2px; margin-top: 8px; }

@@ -50,6 +50,7 @@ svg.lucide{width:14px;height:14px;stroke-width:1.75}
 .nav{position:sticky;top:0;z-index:50;background:rgba(14,13,11,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--hair)}
 .nav-in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:10px 20px}
 .brand{display:flex;align-items:center;gap:9px;font:700 13px var(--mono);letter-spacing:.18em}
+.brand{text-decoration:none;color:var(--bone)}
 .brandmark{width:9px;height:9px;background:var(--verm);flex:none}
 .brand small{font:italic 400 13px var(--serif);letter-spacing:.02em;color:var(--bonemut);text-transform:none}
 .tabs{display:flex;gap:4px;margin-left:10px}
@@ -202,6 +203,7 @@ h1 em .scrib path{fill:none;stroke:var(--verm);stroke-width:3;stroke-linecap:rou
 .sec-k::before{content:'';width:26px;height:1px;background:var(--hair2)}
 .docket{border-top:1px solid var(--hair);margin-top:16px}
 .drow{display:grid;grid-template-columns:110px 1fr auto;gap:26px;padding:30px 8px;border-bottom:1px solid var(--hair);align-items:baseline;cursor:pointer;transition:background .18s}
+.drow{width:100%;border:0;background:transparent;color:inherit;text-align:left}
 .drow:hover{background:#15120D}
 .dnum{font:400 56px/0.9 var(--serif);color:#524634;letter-spacing:.01em;transition:color .2s,transform .2s;display:inline-block}
 .drow:hover .dnum{color:var(--verm);transform:translateX(4px)}
@@ -216,6 +218,8 @@ h1 em .scrib path{fill:none;stroke:var(--verm);stroke-width:3;stroke-linecap:rou
 .band h3{font:400 26px var(--serif)}
 .band h3 em{color:var(--verm)}
 .band p{color:var(--bonedim);font-size:13px;margin-top:7px}
+.home-upload input{display:none}.home-upload .btn{cursor:pointer}.route-notice .wrap{padding-bottom:0}.route-notice .status-banner{margin-bottom:0}
+.source-spec-card{transform:rotate(-1.2deg)}.source-spec-card .ph{cursor:default}.route-sidecard{min-height:300px}.route-sidecard h3{font:400 28px var(--serif);color:var(--bone);margin-bottom:10px}.route-sidecard p{color:var(--bonedim);font-size:13px;line-height:1.7;margin-bottom:20px}
 
 /* ================= specimen page ================= */
 .scan-grid{display:grid;grid-template-columns:.94fr 1.06fr;gap:18px;align-items:start}

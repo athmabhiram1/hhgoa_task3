@@ -9,7 +9,7 @@ type Filter = "ALL" | "SOCIAL" | "WEB";
 function providerTone(provider: string): string {
   if (/lens/i.test(provider)) return "provider-chip--lens";
   if (/vision/i.test(provider)) return "provider-chip--vision";
-  return "provider-chip--fixture";
+  return "provider-chip--none";
 }
 
 export function SourceBoard({ candidates, selectedId, searchId, provider, workflow, selectionLocked, onSelect }: { candidates: Candidate[]; selectedId: string; searchId: string; provider: string; workflow: WorkflowState; selectionLocked: boolean; onSelect: (id: string) => void }): ReactElement {

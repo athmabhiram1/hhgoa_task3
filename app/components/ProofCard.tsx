@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactElement } from "react";
-import { RotateCcw, ShieldCheck, Stamp, TriangleAlert } from "lucide-react";
+import { Download, RotateCcw, ShieldCheck, Stamp, TriangleAlert } from "lucide-react";
 import { shorten, type AnchorReceipt, type Candidate, type Verification, type WorkflowState } from "./shared";
 
 export function ProofCard({ selected, phash, searchId, anchor, verification, workflow, busy, onAnchor, onVerify, onTamper, onResetTamper }: {
@@ -9,6 +9,28 @@ export function ProofCard({ selected, phash, searchId, anchor, verification, wor
   onAnchor: () => void; onVerify: () => void; onTamper: () => void; onResetTamper: () => void;
 }): ReactElement {
   const isTampered = workflow === "tampered";
+  function downloadReceipt(): void {
+    if (!anchor) return;
+    const receipt = {
+      case: "SYBILWATCH-HHGOA-TASK3",
+      chainId: 31337,
+      txHash: anchor.txHash,
+      blockNumber: anchor.blockNumber,
+      digest: anchor.digest,
+      manifest: anchor.manifest,
+      verification: verification ? { kind: verification.kind, expected: verification.expected, computed: verification.computed, onChainUrl: verification.onChainUrl, checkedAt: verification.checkedAt } : null,
+      searchId,
+      exportedAt: new Date().toISOString(),
+    };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(receipt, null, 2)], { type: "application/json" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `sybilwatch-receipt-block-${anchor.blockNumber}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
   return <article className={`evidence-card proof-card ${isTampered ? "tampered" : ""}`} id="proof">
     <div className="paper proof-cert">
     {anchor && <span className="filedstamp show">FILED<span>BLOCK {anchor.blockNumber}</span></span>}
@@ -41,6 +63,7 @@ export function ProofCard({ selected, phash, searchId, anchor, verification, wor
       <small>Checked {new Date(verification.checkedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · on-chain URL {shorten(verification.onChainUrl, 22, 10)}</small>
     </div>}
     {anchor && <div className="tx-receipt"><span>TX HASH</span><b>{anchor.txHash}</b></div>}
+    {anchor && <button type="button" className="action-button secondary" aria-label="Download local JSON custody receipt" disabled={busy} onClick={downloadReceipt}><Download size={13} />DOWNLOAD RECEIPT</button>}
     {isTampered && <div className="wash" aria-hidden="true" />}
     {isTampered && <span className="stamp-big bad show">TAMPERED</span>}
     </div>

@@ -92,7 +92,8 @@ h2.pg-t em{font-style:italic;color:var(--verm)}
 .btn-p{background:var(--verm);border-color:var(--verm);color:#FFF3EA;overflow:hidden}
 .btn-p::after{content:'';position:absolute;top:-4px;bottom:-4px;left:-45%;width:32%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.4),transparent);transform:skewX(-18deg);transition:left .5s ease}
 .btn-p:hover:not(:disabled)::after{left:125%}
-.btn-p:hover:not(:disabled){background:var(--vermd);border-color:var(--vermd);color:#fff}
+.btn-p:hover:not(:disabled){background:var(--vermd);border-color:var(--vermd);color:#fff;box-shadow:0 0 0 1px rgba(232,73,46,.22),0 0 26px rgba(232,73,46,.58),0 5px 16px rgba(0,0,0,.48);transform:translateY(-1px)}
+.btn-p:active:not(:disabled){transform:translateY(1px);box-shadow:0 0 12px rgba(232,73,46,.4)}
 .btn-lg{padding:13px 20px;font-size:11px}
 .btn-w{width:100%}
 .shake{animation:shake .34s cubic-bezier(.36,.07,.19,.97)}
@@ -496,7 +497,8 @@ h1 em .scrib path{fill:none;stroke:var(--verm);stroke-width:3;stroke-linecap:rou
 .action-button:hover:not(:disabled){border-color:var(--bonemut)!important;color:var(--bone);background:#1B1812}
 .action-button:disabled{opacity:.4;cursor:not-allowed}
 .action-button.primary{background:var(--verm);border-color:var(--verm)!important;color:#FFF3EA}
-.action-button.primary:hover:not(:disabled){background:var(--vermd);border-color:var(--vermd)!important;color:#fff}
+.action-button.primary:hover:not(:disabled){background:var(--vermd);border-color:var(--vermd)!important;color:#fff;box-shadow:0 0 0 1px rgba(232,73,46,.22),0 0 26px rgba(232,73,46,.58),0 5px 16px rgba(0,0,0,.42);transform:translateY(-1px)}
+.action-button.primary:active:not(:disabled){transform:translateY(1px);box-shadow:0 0 12px rgba(232,73,46,.4)}
 .action-button.secondary{color:var(--ink);border-color:var(--hairp)!important;background:transparent}
 .action-button.secondary:hover:not(:disabled){color:var(--vermd);border-color:var(--vermd)!important;background:rgba(232,73,46,.06)}
 .text-button{padding:10px 0;color:var(--bonemut);font:600 10px var(--mono);letter-spacing:.12em;border-bottom:1px solid var(--hair2)!important}

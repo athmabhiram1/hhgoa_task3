@@ -26,3 +26,17 @@
 .proof-seal.show { animation: sealIn .42s cubic-bezier(.2,1.4,.4,1) forwards; }
 
 .proof-card .filedstamp { top: -18px; }
+
+/* The exported receipt is a paper-side action, so it reads as a calm
+   secondary control beneath the ledger actions rather than another seal. */
+.proof-card > .action-button.secondary {
+  color: var(--inkdim);
+  border-color: var(--hairp) !important;
+  background: rgba(223, 216, 195, .35);
+}
+.proof-card > .action-button.secondary:hover:not(:disabled) {
+  color: var(--vermd);
+  border-color: var(--vermd) !important;
+  background: rgba(232, 73, 46, .08);
+  box-shadow: 0 0 18px rgba(232, 73, 46, .24);
+}

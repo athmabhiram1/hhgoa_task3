@@ -1,0 +1,19 @@
+{
+  "search_id": "6a9ebe754fa3ba27947f6b9e",
+  "txHash": "0xea206d974de1f13ba089c238dbb320b5b6921f66fe14d395181323991edd927b",
+  "blockNumber": 2,
+  "digests": {
+    "canonical_sha": "0x87b503b84f57f58ff06d569294a6ce550641a463d117622e2100e3fd64f1e909",
+    "tampered_sha": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+  },
+  "verified": true,
+  "tamperDetected": true,
+  "vision": {
+    "status": 400,
+    "body": {
+      "error": "JSON { imageBase64: data:image/jpeg;base64,... } required"
+    }
+  },
+  "startedAt": "2026-09-07T13:38:57.619Z",
+  "completedAt": "2026-09-07T13:39:04.455Z"
+}

@@ -1,0 +1,26 @@
+/* proof.css — ProofCard certificate beats.
+   Ports .omo/plans/frontend.html #r-proof into the compact proof card:
+   certificate paper shell, rotating notary seal, FILED block stamp,
+   real-manifest block, tamper wash + TAMPERED big-stamp + shake.
+   Base primitives (.paper, .stamp, .stamp-big, .wash, .filedstamp,
+   .cert .seal, .shake, keyframes) live in app/globals.css; this file
+   only scopes them to the ProofCard context. No new tokens. */
+
+.proof-cert { position: relative; }
+.proof-card.tampered .proof-cert { animation: shake .34s cubic-bezier(.36,.07,.19,.97); }
+
+.proof-manifest {
+  font: 400 10px/1.8 var(--mono); color: var(--ink);
+  background: var(--paper2); border: 1px solid var(--hairp); border-radius: 2px;
+  padding: 12px 14px; margin-top: 12px; overflow-x: auto; white-space: pre;
+  font-variant-numeric: tabular-nums; position: relative; z-index: 2;
+}
+
+.proof-seal {
+  position: absolute; bottom: -30px; right: -16px; width: 128px; height: 128px;
+  color: var(--seal); mix-blend-mode: multiply; opacity: 0; z-index: 7;
+  pointer-events: none; transform: rotate(-12deg);
+}
+.proof-seal.show { animation: sealIn .42s cubic-bezier(.2,1.4,.4,1) forwards; }
+
+.proof-card .filedstamp { top: -18px; }

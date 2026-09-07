@@ -1,0 +1,55 @@
+/* Specimen evidence-card decorations + hero entrance beats, ported from the
+   .omo/plans/frontend.html prototype (r-home hero + spec-card). Base rules for
+   .tape/.spec-tag/.exhtag/.indexcard/.ret/.stamp/#upReady and the wIn/cardDrop/
+   stampIn keyframes live in app/globals.css; this file adapts them to the
+   evidence-grid intake card so nothing collides or overflows the viewport. */
+
+/* cardDrop entrance — same drop-and-settle motion as the prototype's cardDrop,
+   landing straight so the functional grid card stays readable. */
+@keyframes specimenDrop {
+  from { opacity: 0; transform: translateY(-26px) rotate(-3.5deg); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Wrap lets the index card sit BEHIND the card (paper peeking out), matching
+   the prototype's hero-right stacking (spec-card z2 over indexcard z1). */
+.specimen-wrap { position: relative; min-width: 0; z-index: 1; }
+.specimen-wrap .specimen-card {
+  position: relative; z-index: 2; overflow: visible;
+  animation: specimenDrop .8s cubic-bezier(.2, 1.15, .3, 1) .25s both;
+}
+
+/* Tape strips + SPECIMEN tag must sit above the card-kicker strip. */
+.specimen-wrap .tape { z-index: 4; }
+.specimen-wrap .spec-tag { z-index: 5; }
+.specimen-wrap .exhtag { z-index: 5; }
+
+/* Index card: real props only, em-dash for gaps; hangs bottom-left behind the
+   card. Offsets kept small so it never crosses the viewport edge (the global
+   <=1000px rule hides it entirely on narrow screens). */
+.specimen-wrap .indexcard { left: -10px; bottom: -22px; z-index: 1; }
+
+.specimen-panel { margin-top: 34px; }
+.phbits { display: grid; grid-template-columns: repeat(32, 1fr); gap: 2px; margin-top: 8px; }
+.phbits i { display: block; height: 8px; background: rgba(28,24,15,.12); border-radius: 1px; }
+.phbits i[data-one="1"] { background: var(--ink); }
+.phbits-empty { font: 500 9px var(--mono); letter-spacing: .1em; color: var(--inkmut); }
+
+/* Corner reticles frame the specimen photo. */
+.specimen-frame .ret { z-index: 2; }
+
+/* FACE CROP LOCKED chip stays bottom-left; the ACQUIRED stamp takes the
+   bottom-right corner so the two never overlap. */
+.specimen-frame .face-lock { z-index: 3; }
+.specimen-frame .stamp-acq { left: auto; right: 12px; bottom: 14px; z-index: 3; }
+
+/* READY stamp — prototype's #upReady, stamped in when the crop is locked. */
+.spec-cap { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 14px; padding-top: 12px; font: 500 9px var(--mono); letter-spacing: .16em; color: var(--inkdim); }
+#upReady { animation: stampIn .34s cubic-bezier(.2, 1.4, .4, 1) both; }
+
+.sybil-hero h1 .w { display: inline-block; opacity: 0; transform: translateY(.35em); filter: blur(5px); animation: wIn .6s cubic-bezier(.2, 1, .3, 1) forwards; }
+.sybil-hero h1 .w:nth-child(1) { animation-delay: .05s; }
+.sybil-hero h1 .w:nth-child(2) { animation-delay: .13s; }
+.sybil-hero h1 .w:nth-child(3) { animation-delay: .21s; }
+.sybil-hero h1 .w:nth-child(4) { animation-delay: .29s; }
+.sybil-hero h1 em.w { animation-delay: .4s; }

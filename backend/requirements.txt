@@ -1,0 +1,12 @@
+fastapi==0.115.0
+uvicorn[standard]==0.34.0
+python-multipart==0.0.9
+Pillow==11.1.0
+ImageHash==4.3.2
+numpy==1.26.4
+rfc8785==0.1.4
+# ponytail: deepface last — heaviest, pulls TF; keep pinned to avoid surprise major bump
+deepface==0.0.93
+# ponytail: tf-cpu only for local CPU; 2.15 pinned fails on Python 3.12 — allow >=2.16 for 3.12
+tensorflow-cpu>=2.16.0
+tf-keras>=2.16.0

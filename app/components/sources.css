@@ -1,0 +1,97 @@
+/* ============================================================================
+   sources.css — Discovery board (SourceBoard) extensions.
+
+   Visual beats ported from .omo/plans/frontend.html #r-sources:
+   q-chip QUERY, filter pills with live counts, provider-chip tones,
+   search_id copy button, selected-row thread/pin accent, honest empty-state.
+
+   Design-system contract: every color / spacing / type value traces to a
+   globals.css token (--verm, --vermd, --seal, --ochre, --paper, --ink,
+   --bone*, --hair*, --bench2, --mono/--sans/--serif) or to a literal that
+   globals.css already establishes (#73C99B success-green text, #F06A50/#6E2113
+   pin head, rgba tints of --seal/--verm/--ochre). No NEW tokens are invented.
+
+   The base .q-chip / .pills / .pill / .dot / .source-row / .source-meta /
+   .provider-chip primitives already live in globals.css; this file only
+   extends them for the SourceBoard context. Specificity is kept at or above
+   the base selector so the cascade is order-independent.
+   ============================================================================ */
+
+/* --- provider-chip tones ----------------------------------------------------
+   SerpApi Lens  -> green  (--seal)   : genuine primary provider
+   Vision fallbk -> amber  (--ochre)  : degraded but genuine fallback
+   fixture/none  -> neutral (--hair2) : mock / no provider yet
+   .provider-chip.provider-chip--* (0,2,0) beats base .provider-chip (0,1,0). */
+.provider-chip.provider-chip--lens    { border-color: var(--seal);  color: #73C99B;        background: rgba(30,122,74,.12); }
+.provider-chip.provider-chip--vision  { border-color: var(--ochre); color: var(--ochre);   background: rgba(176,124,16,.14); }
+.provider-chip.provider-chip--fixture { border-color: var(--hair2); color: var(--bonemut); background: transparent; }
+
+/* --- q-chip QUERY row -------------------------------------------------------
+   Live query context, bound to the real search_id (never a hardcoded value).
+   Base .q-chip supplies the chip shell + mono type + vermilion <b>; we only
+   add card spacing and mute the domain-set tail for hierarchy. */
+.source-query { margin: 14px 0 0; }
+.source-query-domain { color: var(--bonemut); letter-spacing: .06em; }
+
+/* --- source-meta: search_id copy button (mono styling) ---------------------- */
+.source-copy-btn {
+  font: 600 8px var(--mono); letter-spacing: .12em; text-transform: uppercase;
+  color: var(--bonedim); background: transparent;
+  border: 1px solid var(--hair2); border-radius: 2px; padding: 3px 8px;
+  cursor: pointer; transition: color .15s, border-color .15s, background .15s;
+}
+.source-copy-btn:hover:not(:disabled) { color: var(--bone); border-color: var(--verm); background: rgba(232,73,46,.08); }
+.source-copy-btn:active:not(:disabled) { transform: translateY(1px); }
+.source-copy-btn:disabled { opacity: .35; cursor: not-allowed; }
+.source-copy-btn.copied { color: #73C99B; border-color: var(--seal); background: rgba(30,122,74,.1); }
+
+/* --- filter pills row (ALL / SOCIAL / WEB with live counts) -----------------
+   Base .pills/.pill/.pill.on/.pill i already style the chips + count <i>. */
+.source-pills { margin: 14px 0 0; }
+
+/* --- selected-row thread accent ---------------------------------------------
+   Ports the prototype's red-thread / pin board into the compact list: a
+   vermilion "thread" spine runs down the selected row's left edge with a pin
+   head at the top, and the SELECTED label is stamped. Uses --verm/--vermd and
+   the globals.css .pin head literals (#F06A50/#6E2113). Pseudo-elements are
+   out of flow so the row grid is untouched. */
+.source-row { position: relative; }
+.source-row.selected::before {
+  content: ""; position: absolute; left: -1px; top: -1px; bottom: -1px; width: 3px;
+  background: linear-gradient(180deg, var(--verm), var(--vermd));
+  border-radius: 2px 0 0 2px; pointer-events: none;
+}
+.source-row.selected::after {
+  content: ""; position: absolute; left: -5px; top: 11px; width: 9px; height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #F06A50, var(--vermd) 65%);
+  border: 1.5px solid #6E2113; box-shadow: 0 2px 4px rgba(0,0,0,.5); pointer-events: none;
+}
+.source-row.selected .source-select {
+  justify-self: end; width: max-content;
+  border: 1px solid var(--vermd); border-radius: 2px; padding: 1px 6px;
+  transform: rotate(-2deg); letter-spacing: .1em;
+}
+
+/* --- honest empty-state (polished shell, retains "nothing was invented") ----
+   .source-card .source-empty (0,2,0) beats base .source-empty (0,1,0) so the
+   dashed "empty slot" shell is order-independent. */
+.source-card .source-empty {
+  border: 1px dashed var(--hair2); border-radius: 2px;
+  background: rgba(20,18,14,.4); padding: 18px 16px;
+}
+
+/* --- empty filter result (a filter excludes every candidate) ---------------- */
+.source-filter-empty {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 13px; padding: 12px 14px;
+  border: 1px dashed var(--hair2); border-radius: 2px;
+  color: var(--bonedim); font: 500 10px var(--mono); letter-spacing: .06em;
+}
+.source-filter-empty button {
+  font: 600 9px var(--mono); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--verm); background: transparent;
+  border: 1px solid var(--hair2); border-radius: 2px; padding: 3px 8px;
+  cursor: pointer; transition: border-color .15s, background .15s;
+}
+.source-filter-empty button:hover { border-color: var(--verm); background: rgba(232,73,46,.08); }

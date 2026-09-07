@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>SYBILWATCH — Every face leaves a paper trail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+/* ================= tokens — bench (dark) + paper (light) — UNCHANGED ================= */
+:root{
+  --bench:#0E0D0B; --bench2:#14120E; --hair:#282217; --hair2:#3A331F;
+  --paper:#E9E4D4; --paper2:#DFD8C3; --hairp:#C4BBA0;
+  --ink:#1C180F; --inkdim:#6E6550; --inkmut:#988D72;
+  --bone:#DFD8C6; --bonedim:#A79D85; --bonemut:#6E6753;
+  --verm:#E8492E; --vermd:#C43A22; --seal:#1E7A4A; --ochre:#B07C10;
+  --serif:'Instrument Serif',Georgia,serif;
+  --sans:'Archivo',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --shadow:0 1px 2px rgba(0,0,0,.55),0 14px 30px -16px rgba(0,0,0,.6);
+  --shadowLift:0 2px 3px rgba(0,0,0,.5),0 22px 42px -16px rgba(0,0,0,.68);
+  --noiseP:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
+  --noiseB:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.035 0'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bench);color:var(--bone);font-family:var(--sans);font-size:13.5px;-webkit-font-smoothing:antialiased}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(120% 90% at 50% 0%,transparent 55%,rgba(0,0,0,.32))}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:9999;background-image:var(--noiseB);opacity:.8}
+#flash{position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:0;transition:opacity .35s ease;
+  background:radial-gradient(85% 65% at 50% 42%,rgba(232,73,46,.28),transparent 72%)}
+#flash.on{opacity:1;transition:opacity .06s}
+.mono{font-family:var(--mono)}
+b{font-weight:600}
+[hidden]{display:none!important}
+::selection{background:rgba(232,73,46,.35);color:#fff}
+::-webkit-scrollbar{width:9px}
+::-webkit-scrollbar-thumb{background:#2C2619;border:2px solid var(--bench);border-radius:5px}
+::-webkit-scrollbar-track{background:transparent}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible{outline:1.5px solid var(--verm);outline-offset:2px}
+svg.lucide{width:14px;height:14px;stroke-width:1.75}
+
+/* ================= scroll reveal ================= */
+.rev{opacity:0;transform:translateY(16px);filter:blur(3px);
+  transition:opacity .6s cubic-bezier(.2,1,.3,1),transform .6s cubic-bezier(.2,1,.3,1),filter .6s cubic-bezier(.2,1,.3,1)}
+.rev.vis{opacity:1;transform:none;filter:none}
+
+/* ================= classification bar + nav ================= */
+.classbar{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:7px 20px;border-bottom:1px solid var(--hair);background:var(--bench2);font:500 9px var(--mono);letter-spacing:.16em;color:var(--bonemut);position:relative;z-index:2}
+.classbar .r{color:var(--verm)}
+.nav{position:sticky;top:0;z-index:50;background:rgba(14,13,11,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--hair)}
+.nav-in{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:10px 20px}
+.brand{display:flex;align-items:center;gap:9px;font:700 13px var(--mono);letter-spacing:.18em}
+.brandmark{width:9px;height:9px;background:var(--verm);flex:none}
+.brand small{font:italic 400 13px var(--serif);letter-spacing:.02em;color:var(--bonemut);text-transform:none}
+.tabs{display:flex;gap:4px;margin-left:10px}
+.tab{font:600 10px var(--mono);letter-spacing:.14em;color:var(--bonemut);text-decoration:none;padding:7px 12px;border-radius:2px;border:1px solid transparent;transition:all .15s;white-space:nowrap}
+.tab s{text-decoration:none;color:var(--verm);margin-right:6px;font-weight:700}
+.tab:hover{color:var(--bone);border-color:var(--hair2)}
+.tab.on{background:var(--paper);color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.45)}
+.tab.on s{color:var(--vermd)}
+.nav-status{margin-left:auto;font:500 9.5px var(--mono);letter-spacing:.14em;color:var(--bonemut);white-space:nowrap;display:flex;align-items:center;gap:8px}
+#navChain.ok{color:var(--seal)}#navChain.bad{color:var(--verm)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--bonemut);flex:none}
+.dot.verm{background:var(--verm)}.dot.seal{background:var(--seal)}
+.pulse{animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+
+/* ================= routes & shared ================= */
+.route{display:none}
+.route.on{display:block;animation:routeIn .4s cubic-bezier(.22,1,.36,1)}
+@keyframes routeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.wrap{max-width:1240px;margin:0 auto;padding:36px 20px 84px;position:relative;z-index:1}
+.pg-k{font:600 10px var(--mono);letter-spacing:.2em;color:var(--verm);display:flex;align-items:center;gap:12px}
+.pg-k::before{content:'';width:26px;height:1px;background:var(--verm);transform-origin:left;animation:lineIn .7s cubic-bezier(.2,1,.3,1) both}
+@keyframes lineIn{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+h2.pg-t{font:400 clamp(28px,3.4vw,42px) var(--serif);letter-spacing:.005em;margin-top:12px}
+h2.pg-t em{font-style:italic;color:var(--verm)}
+.pg-row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.pg-s{margin-top:10px;color:var(--bonedim);font-size:14px;max-width:620px;line-height:1.7}
+.plain{display:flex;gap:12px;max-width:860px;padding:13px 16px;margin:18px 0 22px;border-left:2px solid var(--verm);background:var(--bench2);font-size:13px;line-height:1.7;color:var(--bonedim)}
+.plain b{color:var(--bone)}
+.plain em{font:italic 400 14.5px var(--serif);color:var(--bone)}
+.plain svg.lucide{color:var(--verm);flex:none;margin-top:3px;width:15px;height:15px}
+
+/* buttons — sheen sweep on primary */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:600 10.5px var(--mono);letter-spacing:.14em;color:var(--bonedim);background:transparent;border:1px solid var(--hair2);border-radius:2px;padding:10px 15px;cursor:pointer;transition:all .15s;text-transform:uppercase;position:relative}
+.btn:hover:not(:disabled){color:var(--bone);border-color:var(--bonemut);background:#191612}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn svg.lucide{width:13px;height:13px}
+.btn-p{background:var(--verm);border-color:var(--verm);color:#FFF3EA;overflow:hidden}
+.btn-p::after{content:'';position:absolute;top:-4px;bottom:-4px;left:-45%;width:32%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.4),transparent);transform:skewX(-18deg);transition:left .5s ease}
+.btn-p:hover:not(:disabled)::after{left:125%}
+.btn-p:hover:not(:disabled){background:var(--vermd);border-color:var(--vermd);color:#fff}
+.btn-lg{padding:13px 20px;font-size:11px}
+.btn-w{width:100%}
+.shake{animation:shake .34s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{0%,100%{transform:translateX(0)}15%{transform:translateX(-4px)}35%{transform:translateX(4px)}55%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+
+/* ================= paper material ================= */
+.paper{background:var(--paper);background-image:var(--noiseP);color:var(--ink);border-radius:3px;position:relative;box-shadow:var(--shadow);transition:transform .18s}
+.paper.rattled{transform:rotate(.5deg) translateY(1px)}
+.ph-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 14px 9px;border-bottom:3px double var(--hairp);font:600 9px var(--mono);letter-spacing:.16em;color:var(--inkdim)}
+.ph-h .r{color:var(--vermd)}
+.ph-h .formno{color:var(--inkmut);font-weight:500;letter-spacing:.14em;flex:none}
+.ph-b{padding:14px}
+
+/* stamps */
+.stamp{display:inline-flex;align-items:center;gap:5px;font:700 9px var(--mono);letter-spacing:.16em;padding:4px 9px;border:1.5px solid currentColor;border-radius:2px;transform:rotate(-6deg);opacity:0;mix-blend-mode:multiply;white-space:nowrap}
+.stamp.show{animation:stampIn .34s cubic-bezier(.2,1.4,.4,1) forwards}
+@keyframes stampIn{0%{opacity:0;transform:scale(1.9) rotate(-15deg)}55%{opacity:1;transform:scale(.94) rotate(-4deg)}100%{opacity:1;transform:scale(1) rotate(-6deg)}}
+.stamp.ok{color:var(--seal)}.stamp.warn{color:var(--ochre)}.stamp.no{color:var(--inkmut)}.stamp.bad{color:var(--verm)}
+.stamp.onphoto{color:#EDE7D6;mix-blend-mode:normal;border-width:2px;background:rgba(12,11,9,.35)}
+.stamp-big{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-9deg);font:700 30px var(--mono);letter-spacing:.34em;padding:12px 18px 12px 26px;border:3.5px solid currentColor;border-radius:4px;mix-blend-mode:multiply;opacity:0;z-index:6;pointer-events:none;white-space:nowrap}
+.stamp-big.show{animation:stampIn2 .4s cubic-bezier(.2,1.4,.4,1) forwards}
+@keyframes stampIn2{0%{opacity:0;transform:translate(-50%,-50%) scale(2.1) rotate(-16deg)}55%{opacity:.92;transform:translate(-50%,-50%) scale(.94) rotate(-7deg)}100%{opacity:.92;transform:translate(-50%,-50%) scale(1) rotate(-9deg)}}
+.stamp-big.bad{color:var(--verm)}
+.stamp-big.ok{color:var(--seal)}
+.wash{position:absolute;inset:0;background:rgba(232,73,46,.06);border-radius:3px;pointer-events:none;z-index:5}
+.filedstamp{position:absolute;top:-18px;right:20px;padding:9px 6px;text-align:center;transform:rotate(7deg);font:700 8px/1.5 var(--mono);letter-spacing:.16em;color:var(--seal);border:2px solid var(--seal);border-radius:50%;width:88px;opacity:0;mix-blend-mode:multiply;pointer-events:none;z-index:7}
+.filedstamp.show{animation:stampIn .38s cubic-bezier(.2,1.4,.4,1) forwards}
+.filedstamp span{display:block;font-size:7px;letter-spacing:.1em}
+
+/* ================= hero ================= */
+.hero{display:grid;grid-template-columns:1.08fr .92fr;gap:60px;align-items:center;padding:40px 0 10px}
+.kick{font:600 10px var(--mono);letter-spacing:.24em;color:var(--verm)}
+h1{font:400 clamp(44px,5.6vw,76px)/1.02 var(--serif);letter-spacing:.002em;margin:20px 0 20px}
+h1 .w{display:inline-block;opacity:0;transform:translateY(.35em);filter:blur(5px);animation:wIn .6s cubic-bezier(.2,1,.3,1) forwards;animation-delay:var(--d)}
+@keyframes wIn{to{opacity:1;transform:none;filter:blur(0)}}
+h1 em{font-style:italic;color:var(--verm);position:relative;white-space:nowrap}
+h1 em .scrib{position:absolute;left:-2%;right:-2%;bottom:-.08em;width:104%;height:.16em;overflow:visible}
+h1 em .scrib path{fill:none;stroke:var(--verm);stroke-width:3;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:scribIn .7s cubic-bezier(.4,0,.3,1) 1.05s forwards;opacity:.85}
+@keyframes scribIn{to{stroke-dashoffset:0}}
+.lede{font-size:15.5px;line-height:1.75;color:var(--bonedim);max-width:540px}
+.lede b{color:var(--bone)}
+.hero-cta{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}
+.hero-meta{margin-top:34px;padding-top:16px;border-top:1px solid var(--hair);font:500 9.5px var(--mono);letter-spacing:.14em;color:var(--bonemut);display:flex;gap:18px;flex-wrap:wrap}
+
+.hero-right{position:relative;padding:30px 0 46px}
+.spec-card{background:var(--paper);background-image:var(--noiseP);border-radius:3px;padding:16px 16px 14px;transform:rotate(-1.2deg);box-shadow:var(--shadow);position:relative;z-index:2;transition:transform .25s,box-shadow .25s;animation:cardDrop .8s cubic-bezier(.2,1.15,.3,1) .25s both}
+@keyframes cardDrop{from{opacity:0;transform:translateY(-26px) rotate(-3.5deg)}to{opacity:1;transform:rotate(-1.2deg)}}
+.spec-card:hover{transform:rotate(-.4deg) translateY(-3px);box-shadow:var(--shadowLift)}
+.tape{position:absolute;width:84px;height:24px;background:rgba(210,200,168,.5);box-shadow:0 1px 2px rgba(0,0,0,.2);z-index:4;pointer-events:none}
+.tape.tl{top:-10px;left:20px;transform:rotate(-5deg)}
+.tape.tr{top:-10px;right:20px;transform:rotate(4deg)}
+.spec-tag{position:absolute;top:-13px;left:24px;background:var(--verm);color:#FFF3EA;font:700 9px var(--mono);letter-spacing:.2em;padding:4px 9px;border-radius:2px;box-shadow:0 3px 8px rgba(0,0,0,.4);z-index:5;animation:tagDrop .5s cubic-bezier(.2,1.4,.4,1) .7s both}
+@keyframes tagDrop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.exhtag{position:absolute;top:52px;right:-16px;transform:rotate(7deg);transform-origin:16px -10px;background:var(--paper2);background-image:var(--noiseP);border:1px solid var(--hairp);border-radius:2px;padding:9px 12px 9px 18px;font:700 8.5px/1.6 var(--mono);letter-spacing:.16em;color:var(--inkdim);box-shadow:0 2px 6px rgba(0,0,0,.35);z-index:5;animation:tagIn .5s ease 1s both,sway 4.5s ease-in-out 1.6s infinite alternate}
+@keyframes tagIn{from{opacity:0;transform:rotate(12deg) translateY(-8px)}to{opacity:1;transform:rotate(7deg)}}
+@keyframes sway{from{transform:rotate(5.4deg)}to{transform:rotate(8.6deg)}}
+.exhtag::before{content:'';position:absolute;left:7px;top:50%;margin-top:-3.5px;width:7px;height:7px;border-radius:50%;background:var(--bench);box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+.exhtag::after{content:'';position:absolute;right:100%;top:14px;width:34px;height:1.5px;background:#7A704F;transform-origin:right center;transform:rotate(14deg)}
+.exhtag b{color:var(--vermd)}
+.indexcard{position:absolute;left:-26px;bottom:-24px;width:238px;background:var(--paper2);background-image:var(--noiseP);border-radius:2px;padding:13px 15px;transform:rotate(2.4deg);box-shadow:0 2px 4px rgba(0,0,0,.4);z-index:1;font:500 9px/2 var(--mono);letter-spacing:.1em;color:var(--inkdim);animation:cardDrop .8s cubic-bezier(.2,1.15,.3,1) .45s both}
+.indexcard .row{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dotted rgba(28,24,15,.22);padding-bottom:1px;margin-bottom:2px}
+.indexcard .row:last-child{border-bottom:0}
+.indexcard b{color:var(--ink)}
+.ph{position:relative;background:#0C0B09;aspect-ratio:1/1;overflow:hidden;border-radius:2px;cursor:crosshair}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.88) contrast(1.04);opacity:0;transition:opacity .3s}
+.ph.has-img img{opacity:1}
+.ph img.develop{animation:develop 1s ease both}
+@keyframes develop{0%{filter:blur(12px) grayscale(.95) brightness(.6);opacity:0;transform:scale(1.04)}25%{opacity:1}100%{filter:saturate(.88) contrast(1.04);opacity:1;transform:scale(1)}}
+.ph.drag{outline:2px dashed var(--verm);outline-offset:-10px}
+/* one-shot light sweep while scanning — not a permanent scanline */
+.ph.acquiring::after{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(115deg,transparent 40%,rgba(233,228,212,.18) 50%,transparent 60%);
+  transform:translateX(-130%);animation:sweep 1.15s cubic-bezier(.45,0,.3,1) .12s forwards}
+@keyframes sweep{to{transform:translateX(130%)}}
+.up-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#8A7F63;font:500 9.5px var(--mono);letter-spacing:.18em;text-align:center;padding:0 24px;pointer-events:none;border:1.5px dashed #A99C79;margin:12px;transition:opacity .2s;z-index:1}
+.up-empty svg.lucide{width:26px;height:26px;stroke-width:1.4;color:#A99C79}
+.ph.has-img .up-empty{opacity:0}
+.ph-hint{position:absolute;left:0;right:0;bottom:0;padding:18px 0 9px;text-align:center;font:500 8.5px var(--mono);letter-spacing:.2em;color:#C8BFA5;background:linear-gradient(transparent,rgba(10,9,7,.85));opacity:0;transition:opacity .2s;pointer-events:none;z-index:3}
+.ph:hover .ph-hint{opacity:1}
+.ret{position:absolute;width:18px;height:18px;border:0 solid #E9E4D4;opacity:.85;pointer-events:none;z-index:2}
+.ret.tl{top:9px;left:9px;border-top-width:2px;border-left-width:2px}
+.ret.tr{top:9px;right:9px;border-top-width:2px;border-right-width:2px}
+.ret.bl{bottom:9px;left:9px;border-bottom-width:2px;border-left-width:2px}
+.ret.br{bottom:9px;right:9px;border-bottom-width:2px;border-right-width:2px}
+.spec-cap{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:12px;font:500 9px var(--mono);letter-spacing:.16em;color:var(--inkdim)}
+#upReady{color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;padding:3px 8px;font:700 8.5px var(--mono);letter-spacing:.16em;transform:rotate(-4deg)}
+
+/* acquisition reticle choreography */
+.bbox{position:absolute;left:20%;right:20%;top:22%;bottom:16%;border:1px solid rgba(233,228,212,.75);opacity:0;transform:scale(1.15);pointer-events:none;z-index:2}
+.ph.acquiring .bbox{animation:bboxSnap .45s cubic-bezier(.34,1.56,.64,1) .15s forwards}
+@keyframes bboxSnap{from{opacity:0;transform:scale(1.15)}to{opacity:.95;transform:scale(1)}}
+.pip{position:absolute;width:7px;height:7px;border:2px solid #E9E4D4;opacity:0;transform:translate(var(--tx),var(--ty));pointer-events:none;z-index:2}
+.pip.ptl{top:-5px;left:-5px;border-right:0;border-bottom:0;--tx:-9px;--ty:-9px}
+.pip.ptr{top:-5px;right:-5px;border-left:0;border-bottom:0;--tx:9px;--ty:-9px}
+.pip.pbl{bottom:-5px;left:-5px;border-right:0;border-top:0;--tx:-9px;--ty:9px}
+.pip.pbr{bottom:-5px;right:-5px;border-left:0;border-top:0;--tx:9px;--ty:9px}
+.ph.acquiring .pip{animation:pipIn .3s cubic-bezier(.3,1.4,.5,1) .35s forwards}
+@keyframes pipIn{to{opacity:1;transform:translate(0,0)}}
+.lm{position:absolute;width:6px;height:6px;margin:-3px;border-radius:50%;background:var(--verm);left:var(--x);top:var(--y);opacity:0;pointer-events:none;z-index:2}
+.ph.locked .lm{animation:lmIn .28s ease-out both;animation-delay:calc(.5s + var(--i)*.04s)}
+@keyframes lmIn{0%{opacity:0;transform:scale(1.9)}70%{opacity:1}100%{opacity:.95;transform:scale(1)}}
+.ph.locked .lm::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:1px solid var(--seal);opacity:0;animation:lmPulse .7s ease-out both;animation-delay:calc(.78s + var(--i)*.04s)}
+@keyframes lmPulse{0%{opacity:.9;transform:scale(.4)}100%{opacity:0;transform:scale(1.7)}}
+.stamp-acq{position:absolute;left:12px;bottom:14px;z-index:3}
+
+/* ================= home: docket ================= */
+.sec-k{font:600 10px var(--mono);letter-spacing:.24em;color:var(--bonemut);margin:64px 0 4px;display:flex;align-items:center;gap:12px}
+.sec-k::before{content:'';width:26px;height:1px;background:var(--hair2)}
+.docket{border-top:1px solid var(--hair);margin-top:16px}
+.drow{display:grid;grid-template-columns:110px 1fr auto;gap:26px;padding:30px 8px;border-bottom:1px solid var(--hair);align-items:baseline;cursor:pointer;transition:background .18s}
+.drow:hover{background:#15120D}
+.dnum{font:400 56px/0.9 var(--serif);color:#524634;letter-spacing:.01em;transition:color .2s,transform .2s;display:inline-block}
+.drow:hover .dnum{color:var(--verm);transform:translateX(4px)}
+.drow h3{font:600 16.5px var(--sans);letter-spacing:.01em}
+.drow h3 em{font:italic 400 17px var(--serif);color:var(--verm)}
+.drow p{color:var(--bonedim);font-size:13px;line-height:1.7;margin-top:7px;max-width:600px}
+.dgo{font:600 10px var(--mono);letter-spacing:.16em;color:var(--bonemut);display:flex;align-items:center;gap:9px;white-space:nowrap;transition:color .15s}
+.dgo svg.lucide{transition:transform .18s}
+.drow:hover .dgo{color:var(--verm)}
+.drow:hover .dgo svg.lucide{transform:translateX(4px)}
+.band{margin-top:60px;border:1px solid var(--hair);border-radius:3px;background:var(--bench2);padding:30px 32px;display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap}
+.band h3{font:400 26px var(--serif)}
+.band h3 em{color:var(--verm)}
+.band p{color:var(--bonedim);font-size:13px;margin-top:7px}
+
+/* ================= specimen page ================= */
+.scan-grid{display:grid;grid-template-columns:.94fr 1.06fr;gap:18px;align-items:start}
+.polaroid{background:var(--paper);background-image:var(--noiseP);border-radius:3px;padding:12px 12px 0;box-shadow:var(--shadow);position:relative}
+.polaroid .ph{border-radius:2px}
+.pol-cap{display:flex;justify-content:space-between;padding:11px 2px 12px;font:500 9px var(--mono);letter-spacing:.16em;color:var(--inkdim)}
+.panel{background:var(--bench2);border:1px solid var(--hair);border-radius:3px;overflow:hidden}
+.p-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-bottom:1px solid var(--hair);font:600 9.5px var(--mono);letter-spacing:.18em;color:var(--bonedim)}
+.p-head .st{display:flex;align-items:center;gap:7px;color:var(--bonemut);letter-spacing:.14em}
+.p-progress{height:2px;background:#241E13}
+.p-progress i{display:block;height:100%;width:0;background:var(--verm);transition:width .55s cubic-bezier(.4,0,.2,1),background .4s}
+.p-progress.full i{background:var(--seal)}
+.p-body{padding:16px}
+.cklist{list-style:none}
+.ck{display:flex;gap:14px;padding:15px 2px;border-bottom:1px solid var(--hair);opacity:.38;transition:opacity .35s}
+.ck:last-child{border-bottom:0}
+.ck.busy,.ck.done{opacity:1}
+.ck-n{font:400 22px var(--serif);color:#5A4F36;width:34px;flex:none;line-height:1.2;transition:color .3s}
+.ck.busy .ck-n{color:var(--verm)}
+.ck.done .ck-n{color:var(--seal)}
+.ck-tx{flex:1;min-width:0}
+.ck-tx b{display:block;font-size:13.5px;letter-spacing:.01em}
+.ck-tx .p{display:block;font-size:12px;color:var(--bonedim);margin-top:4px;line-height:1.6}
+.ck-tx .t{display:block;font:500 9px var(--mono);letter-spacing:.08em;color:var(--bonemut);margin-top:7px;min-height:11px}
+.ck-ic{width:20px;flex:none;display:flex;justify-content:flex-end;padding-top:3px}
+.spin{width:12px;height:12px;border-radius:50%;border:2px solid #3A331F;border-top-color:var(--verm);animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.tick{width:16px;height:16px}
+.tick path{stroke:var(--seal);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30;stroke-dashoffset:30;animation:tick .35s ease-out forwards}
+@keyframes tick{to{stroke-dashoffset:0}}
+.after-ck{margin-top:18px;opacity:0;transform:translateY(6px);transition:all .4s;pointer-events:none}
+.after-ck.show{opacity:1;transform:none;pointer-events:auto}
+.tele{margin-top:16px;background:var(--paper);background-image:var(--noiseP);border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.5);overflow:hidden}
+.tele>div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 13px;border-bottom:1px solid rgba(28,24,15,.14);transition:background .15s}
+.tele>div:hover{background:rgba(28,24,15,.035)}
+.tele>div:last-child{border-bottom:0}
+.tele dt{font:600 8.5px var(--mono);letter-spacing:.18em;color:var(--inkdim)}
+.tele dd{font:500 11px var(--mono);letter-spacing:.02em;color:var(--ink);display:flex;align-items:center;gap:7px;font-variant-numeric:tabular-nums}
+.mini{font:700 8px var(--mono);letter-spacing:.14em;color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;padding:2px 5px;transform:rotate(-3deg);font-style:normal}
+.chart-card{margin-top:14px;background:var(--paper);background-image:var(--noiseP);border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.5);padding:12px 13px 10px;position:relative}
+.chart-h{font:600 8.5px var(--mono);letter-spacing:.18em;color:var(--inkdim);display:flex;justify-content:space-between;gap:8px;margin-bottom:8px}
+#spark{display:block;width:100%;height:86px;cursor:crosshair}
+.spark-stats{margin-top:7px;font:500 9px var(--mono);color:var(--inkdim);letter-spacing:.06em;display:flex;gap:14px;font-variant-numeric:tabular-nums}
+.spark-tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);border-radius:2px;padding:4px 8px;font:500 9.5px var(--mono);opacity:0;transition:opacity .15s;white-space:nowrap;z-index:5}
+
+/* ================= sources page — evidence wall ================= */
+.ctl-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:22px}
+.q-chip{display:flex;align-items:center;gap:9px;font:500 10px var(--mono);color:var(--bonedim);letter-spacing:.08em;background:var(--bench2);border:1px solid var(--hair);border-radius:2px;padding:8px 12px;white-space:nowrap;overflow:hidden}
+.q-chip b{color:var(--verm);font-weight:600}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{font:600 9.5px var(--mono);letter-spacing:.12em;color:var(--bonemut);background:transparent;border:1px solid var(--hair);border-radius:2px;padding:6px 10px;cursor:pointer;transition:all .15s}
+.pill:hover{color:var(--bone);border-color:var(--hair2);transform:translateY(-1px)}
+.pill.on{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.pill i{font-style:normal;color:var(--bonemut);margin-left:5px}
+.pill.on i{color:var(--vermd)}
+.strength{margin-left:auto;display:flex;align-items:center;gap:10px;font:500 9px var(--mono);letter-spacing:.14em;color:var(--bonemut)}
+.strength-bar{width:96px;height:3px;background:#2A241A;overflow:hidden}
+.strength-bar i{display:block;height:100%;width:0;background:var(--ochre);transition:width 1.1s cubic-bezier(.22,1,.36,1)}
+.strength b{color:var(--ochre);font-size:11px;font-variant-numeric:tabular-nums}
+.strength .rl{color:var(--bonedim)}
+
+.board{position:relative;display:grid;grid-template-columns:300px 1fr;gap:34px;align-items:start}
+#thread{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;overflow:visible}
+#threadPath{stroke:var(--verm);stroke-width:2;fill:none;opacity:.85;filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
+#threadSpark{stroke:#FF7A5C;stroke-width:2.5;fill:none;opacity:.9;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+#thread circle.joint{fill:var(--vermd);stroke:#7E2716;stroke-width:2}
+#chainRing{fill:none;stroke:var(--verm);stroke-width:2.5;transform-box:fill-box;transform-origin:center;animation:ringPulse 2s ease-in-out infinite}
+@keyframes ringPulse{0%,100%{opacity:.95;transform:scale(1)}50%{opacity:.4;transform:scale(1.3)}}
+.board-left{position:relative;z-index:2}
+.board-note{margin-top:14px;font:italic 400 15px var(--serif);color:var(--bonemut);line-height:1.55;padding:0 4px}
+.stack{position:relative;z-index:2;display:flex;flex-direction:column;gap:20px;min-width:0}
+.boot{padding:40px 0;text-align:center;font:500 10px var(--mono);letter-spacing:.2em;color:var(--bonemut);animation:pulse 1.4s infinite}
+.cand{position:relative;padding:16px 16px 15px;cursor:pointer;transition:transform .18s,box-shadow .18s;opacity:0}
+.cand:hover{transform:translateY(-3px) rotate(-.3deg);box-shadow:var(--shadowLift)}
+.cand.on{outline:2px solid var(--ink);outline-offset:-2px}
+.pin{position:absolute;top:-7px;left:50%;margin-left:-7px;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#F06A50,var(--vermd) 65%);border:2px solid #6E2113;box-shadow:0 3px 5px rgba(0,0,0,.5);z-index:3;transition:transform .15s}
+.cand:hover .pin{transform:scale(1.25)}
+.c-top{display:flex;gap:13px;align-items:flex-start}
+.c-av{position:relative;width:52px;height:52px;flex:none;background:#fff;padding:3px;box-shadow:0 1px 3px rgba(28,24,15,.35);border-radius:1px}
+.c-av img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.9)}
+.c-av .pf{position:absolute;right:-5px;bottom:-5px;width:16px;height:16px;background:var(--ink);color:var(--paper);border-radius:2px;display:flex;align-items:center;justify-content:center}
+.c-av .pf svg{width:9px;height:9px}
+.c-id{flex:1;min-width:0}
+.c-plat{font:700 9px var(--mono);letter-spacing:.2em;color:var(--inkdim);display:flex;gap:8px;align-items:baseline;min-width:0}
+.c-plat .c-src{color:var(--inkmut);font-weight:500;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.c-handle{font:600 14.5px var(--sans);color:var(--ink);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-handle small{color:var(--inkdim);font-weight:500;font-size:11.5px}
+.c-metrics{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;padding-top:11px;border-top:1px solid var(--hairp)}
+.m label{font:600 8.5px var(--mono);letter-spacing:.16em;color:var(--inkdim);display:block}
+.m-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.m-bar{flex:1;height:3px;background:#CFC6AC;overflow:hidden}
+.m-bar i{display:block;height:100%;width:0;transition:width .7s cubic-bezier(.22,1,.36,1)}
+.m b{font:600 12px var(--mono);color:var(--ink);min-width:38px;text-align:right;font-variant-numeric:tabular-nums}
+.m-sub{font:500 8.5px var(--mono);color:var(--inkmut)}
+.c-badges{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px;align-items:center}
+.b-info{font:600 8.5px var(--mono);letter-spacing:.1em;color:var(--inkdim);border:1px solid var(--hairp);border-radius:2px;padding:3px 7px}
+.b-anchor{font:700 8.5px var(--mono);letter-spacing:.1em;color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;padding:3px 7px;transform:rotate(-2deg)}
+
+/* ================= proof page — REBUILT: certificate + step rail ================= */
+.cust-grid{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:24px;align-items:start}
+.cert{animation:certIn .65s cubic-bezier(.2,1,.3,1) .1s both}
+@keyframes certIn{from{opacity:0;transform:translateY(22px) rotate(1.1deg)}to{opacity:1;transform:none}}
+.cert-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:18px 20px 14px;border-bottom:3px double var(--hairp)}
+.ch-k{font:600 8.5px var(--mono);letter-spacing:.2em;color:var(--inkdim)}
+.ch-t{font:400 25px var(--serif);margin-top:6px}
+.ch-t em{font-style:italic;color:var(--vermd)}
+.ch-r{font:500 9px/1.8 var(--mono);letter-spacing:.14em;color:var(--inkmut);text-align:right;white-space:nowrap}
+.ch-r b{color:var(--ink);font-weight:600}
+.cert-body{padding:16px 20px 18px}
+.cb-h{display:flex;justify-content:space-between;gap:10px;font:600 8.5px var(--mono);letter-spacing:.18em;color:var(--inkdim);margin-bottom:7px}
+.manifest{font:400 10.5px/1.8 var(--mono);color:var(--ink);background:var(--paper2);border:1px solid var(--hairp);border-radius:2px;padding:12px 14px;overflow-x:auto;white-space:pre;font-variant-numeric:tabular-nums;position:relative;z-index:2}
+.manifest .k{color:var(--vermd);font-weight:600}
+.manifest .s{color:var(--ink)}
+.manifest .p{color:var(--inkmut)}
+.manifest .v-ok{color:var(--seal);font-weight:600}
+.manifest .v-id{color:var(--ochre);font-weight:600}
+.diff-flash{background:rgba(232,73,46,.22)!important;color:#8E2413!important;border-radius:2px;padding:0 2px;box-shadow:inset 0 0 0 1px rgba(196,58,34,.5);animation:diffpulse 1.1s ease-in-out infinite}
+@keyframes diffpulse{50%{background:rgba(232,73,46,.4)!important}}
+.parity2{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;margin-top:16px}
+.parity2 label{font:600 8.5px var(--mono);letter-spacing:.16em;color:var(--inkdim);display:block;margin-bottom:5px}
+.p2x{font:italic 400 26px var(--serif);color:var(--inkmut);align-self:center;padding-bottom:14px}
+.digest{font:500 10px/1.7 var(--mono);letter-spacing:.02em;word-break:break-all;color:var(--ink);font-variant-numeric:tabular-nums}
+.digest.dim{color:var(--inkmut)}
+.digest span.r{color:var(--inkmut)}
+.digest span.k{color:var(--seal);font-weight:600}
+.digest span.q{color:var(--ink)}
+.digest span.d{color:#8E2413;font-weight:700;background:rgba(232,73,46,.2);border-radius:2px}
+#compSide{transition:color .2s}
+#compSide.side-bad label{color:var(--vermd)}
+#compSide.side-bad .digest{color:#8E2413;font-weight:600}
+.sig-row{margin-top:14px;padding-top:12px;border-top:1px solid var(--hairp)}
+.cert-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:15px;padding-top:13px;border-top:1px solid var(--hairp);flex-wrap:wrap}
+.cert-foot .lbl{font:600 8.5px var(--mono);letter-spacing:.16em;color:var(--inkdim)}
+#hd{font:700 10.5px var(--mono);letter-spacing:.04em}
+#hd.hd-warn{color:var(--ochre)}
+#hd.hd-bad{color:var(--vermd)}
+.verdict{font:700 9px var(--mono);letter-spacing:.14em;padding:4px 9px;border-radius:2px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap;transform:rotate(-2deg);border:1.5px solid currentColor}
+.verdict svg.lucide{width:11px;height:11px}
+.verdict.draft{color:var(--ochre)}
+.verdict.ok{color:var(--seal)}
+.verdict.bad{color:var(--vermd);animation:diffpulse 1.1s infinite}
+.cert .seal{position:absolute;bottom:-30px;right:-16px;width:128px;height:128px;color:var(--seal);mix-blend-mode:multiply;opacity:0;z-index:7;pointer-events:none;transform:rotate(-12deg)}
+.cert .seal.show{animation:sealIn .42s cubic-bezier(.2,1.4,.4,1) forwards}
+@keyframes sealIn{0%{opacity:0;transform:rotate(-24deg) scale(2)}60%{opacity:.95;transform:rotate(-10deg) scale(.95)}100%{opacity:.95;transform:rotate(-12deg) scale(1)}}
+
+/* step rail */
+.rail-k{font:600 9px var(--mono);letter-spacing:.2em;color:var(--bonemut);margin-bottom:12px}
+.stepcard{position:relative;background:var(--bench2);border:1px solid var(--hair);border-left:3px solid var(--hair2);border-radius:3px;padding:16px 16px 15px;transition:border-color .35s,opacity .6s,transform .6s,filter .6s}
+.stepcard h3{font:600 14px var(--sans);letter-spacing:.01em;color:var(--bone)}
+.stepcard .sc-p{font-size:12px;color:var(--bonedim);line-height:1.65;margin-top:5px}
+.sn{font:400 26px var(--serif);color:#524634;position:absolute;top:12px;right:14px;line-height:1;transition:color .3s}
+.stepcard.done{border-left-color:var(--seal)}
+.stepcard.done .sn{color:var(--seal)}
+.sdone{position:absolute;top:-9px;left:-11px;width:22px;height:22px;border-radius:50%;background:var(--seal);color:#EDE7D6;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 7px rgba(0,0,0,.45);transform:scale(0);transition:transform .32s cubic-bezier(.2,1.5,.4,1);z-index:3}
+.sdone svg{width:11px;height:11px;stroke-width:3.2}
+.stepcard.done .sdone{transform:scale(1)}
+.schip{display:inline-block;font:700 8.5px var(--mono);letter-spacing:.14em;color:var(--inkdim);background:var(--paper);border:1px solid var(--hairp);border-radius:2px;padding:3px 8px;transform:rotate(-2deg);margin-top:9px;transition:color .3s,border-color .3s}
+.schip.ok{color:var(--seal);border-color:var(--seal)}
+.schip.bad{color:var(--vermd);border-color:var(--vermd)}
+.stepcard.beaming{outline:2px dashed var(--ochre);outline-offset:4px;animation:dashPulse 1s ease-in-out infinite}
+@keyframes dashPulse{50%{outline-color:transparent}}
+.stepcard .btn{margin-top:12px}
+.txrow{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.22,1,1,1),margin .45s}
+.stepcard.anchored .txrow{max-height:120px;margin-top:12px}
+.txrow label{font:600 8.5px var(--mono);letter-spacing:.18em;color:var(--inkdim);display:block;margin-bottom:3px}
+.tx-meta{display:flex;gap:14px;font:500 9.5px var(--mono);color:var(--inkdim);margin-top:6px;letter-spacing:.1em;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.tx-meta b{color:var(--bone)}
+.conf{color:var(--seal);display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.ping{width:7px;height:7px;border-radius:50%;background:var(--seal);position:relative;flex:none}
+.ping::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1.5px solid var(--seal);animation:ping 1.6s ease-out infinite}
+@keyframes ping{0%{transform:scale(.5);opacity:.9}100%{transform:scale(1.9);opacity:0}}
+.connector{display:block;width:2px;height:16px;margin:0 0 14px 25px;background:#2A241A;transition:background .45s}
+.connector.fill{background:var(--seal)}
+.tamp-panel{border:1px solid rgba(232,73,46,.4);border-left:3px solid var(--verm);border-radius:3px;background:linear-gradient(180deg,rgba(232,73,46,.05),transparent),var(--bench2);padding:16px;position:relative}
+.tamp-panel h3{font:600 14px var(--sans);color:var(--bone)}
+.tamp-panel .sc-p{font-size:12px;color:var(--bonedim);line-height:1.65;margin-top:5px}
+.t-alert{display:flex;gap:9px;align-items:center;color:var(--verm);font:700 10px var(--mono);letter-spacing:.14em;border:1.5px solid var(--verm);border-radius:2px;padding:9px 11px;margin-top:12px;background:rgba(232,73,46,.08)}
+.t-alert svg.lucide{width:14px;height:14px;flex:none}
+.foot2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.notes{margin-top:20px}
+.notelog{font:400 10px/20px var(--mono);color:var(--ink);height:158px;overflow-y:auto;padding:4px 14px;background-image:repeating-linear-gradient(transparent 0 19px,rgba(28,24,15,.14) 19px 20px);font-variant-numeric:tabular-nums}
+.notelog div{display:flex;gap:10px;animation:noteIn .28s ease both}
+@keyframes noteIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+.notelog .t{color:var(--inkmut);flex:none}
+.notelog .ok{color:var(--seal);font-weight:600}
+.notelog .warn{color:var(--ochre);font-weight:600}
+.notelog .alert{color:var(--vermd);font-weight:700}
+
+/* ================= modal & toasts (paper chits) ================= */
+.modal-ov{position:fixed;inset:0;background:rgba(8,7,5,.78);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s;padding:20px}
+.modal-ov.open{opacity:1;pointer-events:auto}
+.modal{width:min(500px,94vw);background:var(--paper);background-image:var(--noiseP);color:var(--ink);border-radius:3px;box-shadow:0 30px 80px -20px rgba(0,0,0,.8);transform:translateY(12px) scale(.98);transition:transform .25s cubic-bezier(.22,1,.36,1)}
+.modal-ov.open .modal{transform:none}
+.m-head{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:3px double var(--hairp);font:700 10px var(--mono);letter-spacing:.2em;color:var(--inkdim)}
+.mx{background:none;border:0;cursor:pointer;color:var(--inkdim);display:flex;padding:4px}
+.mx:hover{color:var(--ink)}
+.m-body{padding:16px}
+.m-body .ph-h2{font:600 9px var(--mono);letter-spacing:.18em;color:var(--inkdim);margin-bottom:7px}
+.m-wallet{display:flex;align-items:center;gap:9px;margin-top:14px;font:500 10px var(--mono);letter-spacing:.08em;color:var(--inkdim);border:1.5px dashed var(--hairp);border-radius:2px;padding:9px 11px}
+.m-wallet b{color:var(--vermd)}
+.m-foot{display:flex;justify-content:flex-end;gap:9px;padding:13px 16px;border-top:1px solid var(--hairp)}
+.m-foot .btn{border-color:var(--hairp);color:var(--inkdim)}
+.m-foot .btn:hover{color:var(--ink);border-color:var(--inkdim);background:rgba(28,24,15,.05)}
+.m-foot .btn-p{background:var(--verm);border-color:var(--verm);color:#FFF3EA}
+.m-foot .btn-p:hover{background:var(--vermd);color:#fff}
+.toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:9px;z-index:1200;max-width:min(420px,90vw)}
+.toast{position:relative;display:flex;gap:10px;align-items:center;background:var(--paper);background-image:var(--noiseP);color:var(--ink);border:1px solid var(--hairp);border-radius:2px;padding:11px 14px 11px 20px;font:500 10.5px/1.5 var(--mono);letter-spacing:.04em;box-shadow:var(--shadow);opacity:0}
+.toast::before{content:'';position:absolute;left:7px;top:8px;bottom:8px;width:4px;border-radius:1px;background:var(--verm)}
+.toast.in{animation:chitIn .38s cubic-bezier(.2,1.2,.35,1) forwards}
+.toast.out{animation:chitOut .3s ease forwards}
+@keyframes chitIn{from{opacity:0;transform:translateX(34px) rotate(2.5deg)}to{opacity:1;transform:none}}
+@keyframes chitOut{to{opacity:0;transform:translateY(8px) rotate(-1deg)}}
+.toast.ok::before{background:var(--seal)}
+.toast.warn::before{background:var(--ochre)}
+
+/* ================= footer ================= */
+.foot{border-top:1px solid var(--hair);padding:22px 20px 26px;display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:baseline;position:relative;z-index:1}
+.foot .fq{font:italic 400 17px var(--serif);color:var(--bonedim)}
+.foot .fq em{color:var(--verm)}
+.foot .fm{font:500 8.5px var(--mono);letter-spacing:.18em;color:var(--bonemut)}
+.foot .fm b{color:var(--verm);font-weight:600}
+
+/* ================= responsive ================= */
+@media (max-width:1000px){
+  .hero{grid-template-columns:1fr;gap:36px}
+  .indexcard{display:none}
+  .exhtag{right:6px}
+  .scan-grid,.cust-grid{grid-template-columns:1fr}
+  .board{grid-template-columns:1fr}
+  #thread{display:none}
+  .drow{grid-template-columns:64px 1fr;gap:16px}
+  .dnum{font-size:38px}
+  .dgo{grid-column:2}
+  .strength{margin-left:0}
+  .tabs{overflow-x:auto}
+  .parity2{grid-template-columns:1fr;gap:12px}
+  .p2x{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s!important;transition-duration:.001s!important}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div id="flash"></div>
+
+<!-- classification strip -->
+<div class="classbar">
+  <span><span class="r">UNCLASSIFIED</span> · PUBLIC DEMONSTRATION BUILD · CASE №2026-0114</span>
+  <span>ALL ANALYSIS RUNS IN THIS BROWSER — NO PHOTO IS UPLOADED</span>
+</div>
+
+<!-- nav -->
+<nav class="nav">
+  <div class="nav-in">
+    <span class="brand"><span class="brandmark"></span>SYBILWATCH <small>case files</small></span>
+    <nav class="tabs">
+      <a class="tab" href="#/" data-r="home">CASE FILE</a>
+      <a class="tab" href="#/specimen" data-r="specimen"><s>01</s>SPECIMEN</a>
+      <a class="tab" href="#/sources" data-r="sources"><s>02</s>SOURCES</a>
+      <a class="tab" href="#/proof" data-r="proof"><s>03</s>PROOF</a>
+    </nav>
+    <div class="nav-status"><span class="dot" id="navDot"></span><span id="navChain">LEDGER: LOCAL 31337 · BLOCK 4</span></div>
+  </div>
+</nav>
+
+<main>
+
+<!-- ============ ROUTE · CASE FILE (HOME) ============ -->
+<section class="route" id="r-home">
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <span class="kick">BIOMETRIC PROVENANCE · FOR TRUST &amp; SAFETY TEAMS</span>
+        <h1 aria-label="Every face leaves a paper trail."><span class="w" style="--d:.05s">Every</span> <span class="w" style="--d:.13s">face</span> <span class="w" style="--d:.21s">leaves</span> <span class="w" style="--d:.29s">a</span> <em class="w" style="--d:.4s">paper&nbsp;trail.<svg class="scrib" viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true"><path d="M3 9 C 55 3, 140 2, 197 7" pathLength="1"/></svg></em></h1>
+        <p class="lede w" style="--d:.5s;animation:wIn .6s cubic-bezier(.2,1,.3,1) forwards;opacity:0">Drop in any profile photo. <b>SybilWatch</b> finds every account wearing the same face — stolen avatars, fake recruiters, coordinated Sybil rings — then seals the evidence with a fingerprint <b>nobody can quietly rewrite</b>.</p>
+        <div class="hero-cta w" style="--d:.6s;animation:wIn .6s cubic-bezier(.2,1,.3,1) forwards;opacity:0">
+          <button class="btn btn-p btn-lg" id="btnStart"><i data-lucide="scan-face"></i>OPEN A CASE</button>
+          <button class="btn btn-lg" id="btnHow"><i data-lucide="arrow-down"></i>READ THE DOCKET</button>
+        </div>
+        <div class="hero-meta w" style="--d:.7s;animation:wIn .6s cubic-bezier(.2,1,.3,1) forwards;opacity:0">
+          <span>512-D FACE SIGNATURE</span><span>pHash-64</span><span>SHA-256 EVIDENCE</span><span>EIP-712</span><span>LEDGER 31337</span>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="spec-card">
+          <i class="tape tl"></i><i class="tape tr"></i>
+          <span class="spec-tag">SPECIMEN №0001</span>
+          <span class="exhtag">EXHIBIT A<br><b>INTAKE PHOTO</b></span>
+          <div class="ph" id="upZone" title="Drop a photo here, or click to browse">
+            <img id="upImg" alt="Suspect probe headshot" crossorigin="anonymous" src="https://i.pravatar.cc/480?img=12"
+                 onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://randomuser.me/api/portraits/men/32.jpg'}else{this.onerror=null;this.src='https://picsum.photos/seed/probe/480/480.jpg'}">
+            <div class="up-empty"><i data-lucide="image-up"></i><span>DROP A PHOTO HERE<br>OR CLICK TO BROWSE</span></div>
+            <i class="ret tl"></i><i class="ret tr"></i><i class="ret bl"></i><i class="ret br"></i>
+            <div class="ph-hint">CLICK TO BROWSE · JPG / PNG</div>
+          </div>
+          <div class="spec-cap">
+            <span>EXHIBIT A — INTAKE PHOTO</span>
+            <span id="upReady" hidden>READY</span>
+          </div>
+          <div class="spec-cap" style="padding-top:6px;justify-content:flex-start;gap:14px">
+            <button class="btn btn-p" id="btnDemo" style="padding:8px 12px"><i data-lucide="play"></i>USE DEMO PHOTO</button>
+            <span style="letter-spacing:.06em">Stays in this browser.</span>
+          </div>
+        </div>
+        <div class="indexcard" aria-hidden="true">
+          <div class="row"><span>CASE</span><b>№2026-0114</b></div>
+          <div class="row"><span>SUBJECT</span><b>UNVERIFIED</b></div>
+          <div class="row"><span>ANALYST</span><b>K. VOSS</b></div>
+          <div class="row"><span>STATUS</span><b style="color:var(--vermd)">OPEN</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-k" id="how">THE DOCKET — THREE MOVES, THAT'S THE WHOLE PRODUCT</div>
+    <div class="docket">
+      <div class="drow rev" id="drow1">
+        <span class="dnum">01.</span>
+        <div><h3>Trace the <em>specimen</em></h3><p>We locate the face, check the photo is sharp enough to trust, and compute its 512-number signature — a fingerprint for faces. Two photos of the same person produce nearly identical numbers.</p></div>
+        <span class="dgo">OPEN SPECIMEN <i data-lucide="arrow-right"></i></span>
+      </div>
+      <div class="drow rev" id="drow2">
+        <span class="dnum">02.</span>
+        <div><h3>Survey the <em>sources</em></h3><p>The signature is searched across social networks and code forges. Every look-alike is pinned to the wall, ranked on paper, and stamped: same face, weak match, or control sample.</p></div>
+        <span class="dgo">OPEN SOURCES <i data-lucide="arrow-right"></i></span>
+      </div>
+      <div class="drow rev" id="drow3">
+        <span class="dnum">03.</span>
+        <div><h3>Seal the <em>proof</em></h3><p>The evidence is notarised on a ledger — then stress-tested against tampering, live. Change one letter after sealing and the whole fingerprint shatters. Try it yourself.</p></div>
+        <span class="dgo">OPEN PROOF <i data-lucide="arrow-right"></i></span>
+      </div>
+    </div>
+
+    <div class="band rev">
+      <div>
+        <h3>Open a case in <em>under a minute.</em></h3>
+        <p>No signup, no upload — everything runs locally. Built for hire-screening, trust &amp; safety, and OSINT investigators.</p>
+      </div>
+      <button class="btn btn-p btn-lg" id="btnStart2"><i data-lucide="scan-face"></i>OPEN A CASE</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ROUTE · SPECIMEN ============ -->
+<section class="route" id="r-specimen">
+  <div class="wrap">
+    <div class="pg-k">01 // SPECIMEN — FACE INTAKE</div>
+    <div class="pg-row">
+      <h2 class="pg-t">Measure the face.</h2>
+      <button class="btn" id="btnReacq"><i data-lucide="refresh-cw"></i>RE-RUN THE SCAN</button>
+    </div>
+    <p class="pg-s">We turn the photo into something a computer can compare. The checklist on the right runs live, in order.</p>
+    <div class="plain rev">
+      <i data-lucide="pen-line"></i>
+      <span><em>In plain terms —</em> the computer <b>finds the face</b>, makes sure the photo is <b>sharp enough to trust</b>, then boils the face down to <b>512 numbers</b>. Same person, almost the same numbers. Different person, completely different numbers.</span>
+    </div>
+
+    <div class="scan-grid">
+      <div class="rev">
+        <div class="polaroid">
+          <i class="tape tl"></i>
+          <div class="ph" id="frame" title="Click to replace the photo">
+            <img id="probe" crossorigin="anonymous" alt="Probe headshot" src="https://i.pravatar.cc/480?img=12"
+                 onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://randomuser.me/api/portraits/men/32.jpg'}else{this.onerror=null;this.src='https://picsum.photos/seed/probe/480/480.jpg'}">
+            <div class="bbox"><i class="pip ptl"></i><i class="pip ptr"></i><i class="pip pbl"></i><i class="pip pbr"></i></div>
+            <span class="lm" style="--x:37%;--y:37%;--i:0"></span>
+            <span class="lm" style="--x:63%;--y:36%;--i:1"></span>
+            <span class="lm" style="--x:50%;--y:52%;--i:2"></span>
+            <span class="lm" style="--x:40%;--y:64%;--i:3"></span>
+            <span class="lm" style="--x:61%;--y:65%;--i:4"></span>
+            <i class="ret tl"></i><i class="ret tr"></i><i class="ret bl"></i><i class="ret br"></i>
+            <span class="stamp onphoto stamp-acq" id="stampAcq">ACQUIRED</span>
+            <div class="ph-hint">CLICK TO REPLACE PHOTO</div>
+          </div>
+          <div class="pol-cap"><span>EXHIBIT A — SPECIMEN FACE</span><span id="polQ">Q —</span></div>
+        </div>
+        <dl class="tele">
+          <div><dt>RESOLUTION</dt><dd id="tRes">—</dd></div>
+          <div><dt>QUALITY METRIC</dt><dd><b id="tQ">0.00</b><i class="mini">PASSED</i></dd></div>
+          <div><dt>MODEL</dt><dd>GHOSTFACENET · 512-d</dd></div>
+          <div><dt>pHash-64</dt><dd>0x<span id="tPh"></span></dd></div>
+        </dl>
+        <div class="chart-card">
+          <div class="chart-h"><span>THE FACE, AS 512 NUMBERS</span><span>NORMALISED DISTRIBUTION</span></div>
+          <svg id="spark" viewBox="0 0 320 86" preserveAspectRatio="none"></svg>
+          <div class="spark-stats" id="sparkStats"></div>
+          <div class="spark-tip" id="sparkTip"></div>
+        </div>
+      </div>
+
+      <div class="panel rev">
+        <div class="p-head">
+          <span>INTAKE PIPELINE — LIVE</span>
+          <span class="st" id="pipeStat">4 STEPS</span>
+        </div>
+        <div class="p-progress"><i id="pprog"></i></div>
+        <div class="p-body">
+          <ul class="cklist">
+            <li class="ck" id="ck1"><span class="ck-n">01</span><div class="ck-tx"><b>Face located</b><span class="p">We found a face in the photo and measured exactly where it is.</span><span class="t"></span></div><span class="ck-ic"></span></li>
+            <li class="ck" id="ck2"><span class="ck-n">02</span><div class="ck-tx"><b>Photo quality checked</b><span class="p">Blurry or tiny photos give bad matches — we check first.</span><span class="t"></span></div><span class="ck-ic"></span></li>
+            <li class="ck" id="ck3"><span class="ck-n">03</span><div class="ck-tx"><b>Face fingerprint created</b><span class="p">The face is now described by 512 numbers — its signature.</span><span class="t"></span></div><span class="ck-ic"></span></li>
+            <li class="ck" id="ck4"><span class="ck-n">04</span><div class="ck-tx"><b>Searching the web</b><span class="p">Looking for this same face on social networks and code forges.</span><span class="t"></span></div><span class="ck-ic"></span></li>
+          </ul>
+          <div class="after-ck" id="afterCk">
+            <button class="btn btn-p btn-w btn-lg" id="btnViewSources">VIEW THE SOURCES<i data-lucide="arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ROUTE · SOURCES ============ -->
+<section class="route" id="r-sources">
+  <div class="wrap">
+    <div class="pg-k">02 // SOURCES — SAME-FACE SEARCH</div>
+    <div class="pg-row">
+      <h2 class="pg-t">Where else does this <em>face</em> appear?</h2>
+      <button class="btn btn-p" id="btnToProof">SEAL THIS MATCH<i data-lucide="arrow-right"></i></button>
+    </div>
+    <p class="pg-s">Every card is a public account whose profile photo matches the specimen. Click a card to pull it into the case — the red string follows.</p>
+    <div class="plain rev">
+      <i data-lucide="pen-line"></i>
+      <span><em>In plain terms —</em> <b>cosine distance</b> is how different two faces are: <b>lower means same person</b> (0.06 is essentially identical). <b>Hamming distance</b> counts tiny image differences — 3 out of 64 usually just means the same photo was re-compressed by a CDN.</span>
+    </div>
+
+    <div class="ctl-row rev">
+      <div class="q-chip"><span class="dot verm pulse"></span>QUERY <b>lens_live_71f49a</b>· DOMAIN SET: SOCIAL + CODE FORGES</div>
+      <div class="pills">
+        <button class="pill on" data-f="ALL">ALL<i>5</i></button>
+        <button class="pill" data-f="SOCIAL">SOCIAL MEDIA<i>3</i></button>
+        <button class="pill" data-f="CODE">CODE FORGES<i>1</i></button>
+        <button class="pill" data-f="PASTE">PASTE SITES<i>1</i></button>
+      </div>
+      <div class="strength">
+        <span>CASE STRENGTH</span>
+        <div class="strength-bar"><i id="ringBar"></i></div>
+        <b id="ringVal">0.00</b>
+        <span class="rl" id="ringLbl">—</span>
+      </div>
+    </div>
+
+    <div class="board rev" id="board">
+      <svg id="thread" hidden><path id="threadPath" d=""/><path id="threadSpark" d=""/><g id="chainDots"></g><circle id="chainRing" r="7" hidden/></svg>
+      <div class="board-left">
+        <div class="spec-card" style="transform:rotate(-1.6deg);animation:none">
+          <i class="tape tl"></i>
+          <span class="spec-tag">EXHIBIT A</span>
+          <i class="pin" id="probePin" style="left:24px;margin-left:0"></i>
+          <div class="ph has-img" style="cursor:default">
+            <img id="boardProbe" alt="Specimen" crossorigin="anonymous" src="https://i.pravatar.cc/480?img=12"
+                 onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://randomuser.me/api/portraits/men/32.jpg'}else{this.onerror=null;this.src='https://picsum.photos/seed/probe/480/480.jpg'}">
+            <i class="ret tl"></i><i class="ret tr"></i><i class="ret bl"></i><i class="ret br"></i>
+          </div>
+          <div class="spec-cap"><span>SPECIMEN №0001</span><span>THE SUSPECT</span></div>
+        </div>
+        <p class="board-note">One face, pinned. The red string runs through every account wearing it — pull a different card and the string snaps taut to follow.</p>
+      </div>
+      <div class="stack" id="stack"><div class="boot">ENUMERATING SOURCES…</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ROUTE · PROOF — REBUILT ============ -->
+<section class="route" id="r-proof">
+  <div class="wrap">
+    <div class="pg-k">03 // PROOF — CUSTODY &amp; NOTARISATION</div>
+    <div class="pg-row">
+      <h2 class="pg-t">Seal it so it can't be <em>denied.</em></h2>
+    </div>
+    <p class="pg-s">One certificate, one desk. Seal the evidence, attack it, and walk out with a signed proof card.</p>
+    <div class="plain rev">
+      <i data-lucide="pen-line"></i>
+      <span><em>In plain terms —</em> a SHA-256 fingerprint works like a wax seal: change <b>one letter</b> anywhere in the evidence and the whole fingerprint changes <b>completely</b>. The ledger remembers the original. Seal it, try to tamper, watch it shatter — then restore.</span>
+    </div>
+
+    <div class="cust-grid">
+
+      <!-- THE CERTIFICATE — one hero document -->
+      <div class="cert paper rev" id="certPaper">
+        <span class="filedstamp" id="filedStamp" hidden>FILED<span id="filedDate">—</span></span>
+        <div class="seal" id="sealWrap">
+          <svg viewBox="0 0 120 120">
+            <defs><path id="sealcirc" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs>
+            <circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" stroke-width="2.5"/>
+            <circle cx="60" cy="60" r="36" fill="none" stroke="currentColor" stroke-width="1.2"/>
+            <text font-family="IBM Plex Mono,monospace" font-size="8.5" letter-spacing="1.6" fill="currentColor"><textPath href="#sealcirc">VERIFIED · BLOCK 5 · CHAIN 31337 · SYBILWATCH ·</textPath></text>
+            <path d="M46 60 l10 10 l20 -20" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <div class="cert-head">
+          <div>
+            <div class="ch-k">FORM 40-X · CERTIFICATE OF BIOMETRIC INTEGRITY</div>
+            <div class="ch-t">Evidence of <em id="certSubject">@dev_candidate</em></div>
+          </div>
+          <div class="ch-r">CASE <b>№2026-0114</b><br>DOCKET: BIOMETRIC PROVENANCE</div>
+        </div>
+
+        <div class="cert-body">
+          <div class="cb-h"><span>CANONICAL MANIFEST — RFC 8785</span><span>sha256(canonical_bytes)</span></div>
+          <pre class="manifest" id="manifest"></pre>
+
+          <div class="parity2">
+            <div>
+              <label>EXPECTED ANCHOR — ON LEDGER</label>
+              <div class="digest dim" id="dExp">—</div>
+            </div>
+            <div class="p2x">⊕</div>
+            <div id="compSide">
+              <label>COMPUTED DIGEST — LOCAL</label>
+              <div class="digest" id="dComp">—</div>
+            </div>
+          </div>
+
+          <div class="sig-row" id="sigRow" hidden>
+            <div class="cb-h"><span>EIP-712 SIGNATURE · 65 B</span><span>keccak256(hash_struct)</span></div>
+            <div class="digest" id="dSig"></div>
+          </div>
+
+          <div class="cert-foot">
+            <span class="lbl">pHASH HAMMING <b id="hd" class="hd-warn">—</b></span>
+            <span class="verdict draft" id="verdict">DRAFT — UNSEALED</span>
+          </div>
+        </div>
+
+        <div class="wash" id="tamperWash" hidden></div>
+        <span class="stamp-big bad" id="tamperStamp" hidden>TAMPERED</span>
+      </div>
+
+      <!-- THE CERTIFICATION DESK — 3 steps -->
+      <div class="rail">
+        <div class="rail-k rev">CERTIFICATION DESK — FOLLOW THE STEPS</div>
+
+        <div class="stepcard rev" id="step1">
+          <span class="sdone" id="sd1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <span class="sn">01</span>
+          <h3>Seal on the ledger</h3>
+          <p class="sc-p">Writes the evidence fingerprint onto chain 31337. Once sealed, the original can never be quietly rewritten.</p>
+          <span class="schip" id="anchorState">NOT SEALED</span>
+          <button class="btn btn-p btn-w btn-lg" id="btnAnchor"><i data-lucide="stamp"></i><span id="btnAnchorT">SEAL EVIDENCE ON LEDGER</span></button>
+          <div class="txrow">
+            <label>TX HASH</label>
+            <div class="digest" id="dTx">—</div>
+            <div class="tx-meta">
+              <span>BLOCK <b id="txBlk">—</b></span>
+              <span>GAS <b>0</b></span>
+              <span class="conf"><i class="ping"></i>1 CONFIRMATION</span>
+            </div>
+          </div>
+        </div>
+        <i class="connector" id="conn1"></i>
+
+        <div class="tamp-panel rev" id="step2wrap">
+          <h3>02 — Stress-test the seal</h3>
+          <p class="sc-p">Pretend a hacker edited the evidence after sealing. Watch the fingerprint shatter — then restore it in one click.</p>
+          <div class="t-alert" id="tAlert" hidden><i data-lucide="triangle-alert"></i><span>TAMPER DETECTED // RECORD COMPROMISED</span></div>
+          <button class="btn btn-w btn-lg" id="btnTamper"><i data-lucide="binary"></i><span id="btnTamperT">SIMULATE TAMPERING</span></button>
+        </div>
+        <i class="connector" id="conn2"></i>
+
+        <div class="stepcard rev" id="step3">
+          <span class="sdone" id="sd3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <span class="sn">03</span>
+          <h3>Certify &amp; export</h3>
+          <p class="sc-p">Sign the typed data with the custody wallet, then export a paper proof card with an offline-verification QR.</p>
+          <div class="foot2" style="margin-top:12px">
+            <button class="btn btn-lg" id="btnSign"><i data-lucide="pen-line"></i><span>SIGN (EIP-712)</span></button>
+            <button class="btn btn-lg" id="btnExport"><i data-lucide="download"></i><span>EXPORT CARD</span></button>
+          </div>
+        </div>
+
+        <div class="notes paper rev" id="notesPaper">
+          <div class="ph-h"><span>FIELD NOTES — AUDIT LOG</span><span class="formno">FORM 30-A</span><span>append-only</span></div>
+          <div class="notelog" id="log"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <span class="fq">Every face leaves a <em>paper trail.</em></span>
+  <span class="fm">SYBILWATCH · DEMO — SET IN INSTRUMENT SERIF · ARCHIVO · IBM PLEX MONO</span>
+  <span class="fm">DOCKET <b id="routeTag">/HOME</b></span>
+</footer>
+
+<!-- EIP-712 modal -->
+<div class="modal-ov" id="mOv">
+  <div class="modal">
+    <div class="m-head"><span>SIGN TYPED DATA · EIP-712</span><button class="mx" id="mClose"><i data-lucide="x"></i></button></div>
+    <div class="m-body">
+      <div class="ph-h2">DOMAIN — SYBILWATCH CUSTODY</div>
+      <pre class="manifest" id="mDom" style="padding:0"></pre>
+      <div class="ph-h2" style="margin-top:14px">EVIDENCEANCHOR — MESSAGE</div>
+      <pre class="manifest" id="mMsg" style="padding:0"></pre>
+      <div class="m-wallet"><i data-lucide="fingerprint"></i>CUSTODY WALLET <b>0x9C4E…F2A1</b> · CHAIN 31337 · KEYRING: LOCAL-HSM</div>
+    </div>
+    <div class="m-foot">
+      <button class="btn" id="mCancel">CANCEL</button>
+      <button class="btn btn-p" id="mSign"><i data-lucide="pen-line"></i>SIGN</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* ================================================================
+   SYBILWATCH v5 — motion pass + rebuilt Proof page.
+   Routes: /#/specimen → /#/sources → /#/proof
+   All digests/ledger values are deterministic local stand-ins.
+================================================================ */
+const $=id=>document.getElementById(id);
+const HEX='0123456789abcdef';
+const CASE='CASE-2026-0114';
+const PH_BASE='a7c2e14f089b33b3';
+const PROBE_THUMB='https://i.pravatar.cc/96?img=12';
+
+/* ---------- deterministic PRNG ---------- */
+function fnv(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const hexAt=r=>HEX[r()*16|0];
+function digest64(seed){const r=mulberry32(fnv(seed));let s='';for(let i=0;i<64;i++)s+=hexAt(r);return s}
+function mutate64(base){const r=mulberry32(fnv('mut'+base.slice(0,10)));let s='';for(let i=0;i<64;i++){s+=r()<0.5?HEX[(parseInt(base[i],16)+1+(r()*14|0))%16]:base[i]}return s}
+function utc(){return new Date().toISOString().slice(11,23)}
+
+/* ---------- micro-animations ---------- */
+function ticker(el,target,{dur=600,dec=2}={}){
+  const t0=performance.now();
+  (function f(t){const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);
+    el.textContent=(target*e).toFixed(dec);
+    if(p<1)requestAnimationFrame(f)})(t0);
+}
+function scramble(el,target,{diffFrom=null,step=4,ok='q'}={}){
+  return new Promise(res=>{
+    const n=target.length,sp=[];
+    el.textContent='';
+    for(let i=0;i<n;i++){const s=document.createElement('span');s.className='r';s.textContent=hexAt(Math.random);el.appendChild(s);sp.push(s)}
+    const t0=performance.now();
+    function f(t){
+      const locked=Math.min(n,Math.floor((t-t0)/step));
+      for(let i=0;i<locked;i++){
+        if(sp[i].dataset.f!=='1'){sp[i].dataset.f='1';sp[i].textContent=target[i];
+          sp[i].className=(diffFrom&&diffFrom[i]!==target[i])?'d':ok}
+      }
+      for(let i=locked;i<n;i++){if(Math.random()<.5)sp[i].textContent=hexAt(Math.random)}
+      if(locked<n)requestAnimationFrame(f);else res();
+    }
+    requestAnimationFrame(f);
+  });
+}
+function shake(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake')}
+function flashRed(){const f=$('flash');f.classList.add('on');setTimeout(()=>f.classList.remove('on'),120)}
+function setBtn(btn,dis,label){if(dis!==undefined)btn.disabled=dis;if(label!==undefined){const s=btn.querySelector('span');if(s)s.textContent=label;else btn.textContent=label}}
+function toast(type,msg){
+  const t=document.createElement('div');t.className='toast '+(type==='alert'?'':type);t.textContent=msg;
+  $('toasts').appendChild(t);requestAnimationFrame(()=>t.classList.add('in'));
+  setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),320)},3800);
+}
+function log(msg,lvl=''){
+  const d=document.createElement('div');
+  d.innerHTML=`<span class="t">[${utc()}]</span><span class="${lvl}">${msg}</span>`;
+  $('log').appendChild(d);$('log').scrollTop=$('log').scrollHeight;
+}
+function setNav(status){
+  const d=$('navDot'),c=$('navChain');
+  d.className='dot';c.className='';
+  if(status==='ok'){d.classList.add('seal');c.classList.add('ok');c.textContent='SEALED · BLOCK 5'}
+  else if(status==='bad'){d.classList.add('verm');c.classList.add('bad');c.textContent='INTEGRITY BROKEN'}
+  else c.textContent='LEDGER: LOCAL 31337 · BLOCK 4';
+}
+
+/* ---------- case data ---------- */
+const CANDS=[
+ {id:'c1',cat:'SOCIAL',icon:'at-sign',plat:'X / TWITTER',src:'x.com · pbs.twimg.com',handle:'@dev_candidate',name:'',
+  cos:0.06,hd:3,verdict:'SAME FACE',cls:'ok',badge:'NEAR-DUPLICATE DERIVATION — CDN RECOMPRESSION',
+  url:'https://x.com/profile/dev_candidate.jpg',ph:PH_BASE,img:PROBE_THUMB},
+ {id:'c2',cat:'SOCIAL',icon:'briefcase',plat:'LINKEDIN',src:'linkedin.com · media.licdn',handle:'David Chen',name:' — Senior Protocol Engineer',
+  cos:0.08,hd:4,verdict:'SAME FACE',cls:'ok',badge:'IDENTITY REUSE — NAME MISMATCH',
+  url:'https://media.licdn.com/dms/image/david_chen.jpg',ph:'a7c2e14f089b3bb3',img:PROBE_THUMB},
+ {id:'c3',cat:'CODE',icon:'git-branch',plat:'GITHUB',src:'avatars.githubusercontent.com',handle:'@dchen-eth',name:'',
+  cos:0.12,hd:5,verdict:'SAME FACE',cls:'ok',badge:'IDENTICAL BASE IMAGE — RE-ENCODED',
+  url:'https://avatars.githubusercontent.com/u/44219?v=4',ph:'a7c2e14f0d9b33b3',img:PROBE_THUMB},
+ {id:'c4',cat:'SOCIAL',icon:'send',plat:'TELEGRAM',src:'t.me · cdn-telegram.org',handle:'t.me/alpha_signals',name:' — reposted avatar',
+  cos:0.34,hd:21,verdict:'WEAK MATCH',cls:'warn',badge:'WEAK CORRELATION — DERIVATIVE CROP',
+  url:'https://cdn4.telesco.pe/file/alpha_signals_av.jpg',ph:'a7c6a14f0d9b3bb3',img:'https://randomuser.me/api/portraits/men/76.jpg'},
+ {id:'c5',cat:'PASTE',icon:'clipboard-list',plat:'PASTEBIN',src:'pastebin.com · raw',handle:'dox dump ref kQ7zX1mM',name:'',
+  cos:0.51,hd:38,verdict:'NO MATCH',cls:'no',badge:'CONTROL SAMPLE — NO CORRELATION',
+  url:'https://pastebin.com/thumb/kQ7zX1mM.png',ph:'58b16c02a3ee7d41',img:'https://randomuser.me/api/portraits/women/44.jpg'},
+];
+const state={sel:CANDS[0],anchored:false,tampered:false,pending:false,signed:false,exported:false,tested:false,
+  block:4,filter:'ALL',acquired:false,discRendered:false,custSeen:false};
+const selDigest=()=>digest64('sha256:'+state.sel.id);
+const mutDigest=()=>mutate64(selDigest());
+const txHash=()=>'0x'+digest64('tx:'+state.sel.id);
+
+/* ---------- scroll reveal system ---------- */
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')});
+},{threshold:.12});
+document.querySelectorAll('.rev').forEach(el=>io.observe(el));
+function replayReveals(route){
+  const els=[...route.querySelectorAll('.rev')];
+  els.forEach(e=>e.classList.remove('vis'));
+  els.forEach((e,i)=>{
+    const r=e.getBoundingClientRect();
+    if(r.top<innerHeight&&r.bottom>0)setTimeout(()=>e.classList.add('vis'),90+i*85);
+  });
+}
+
+/* ---------- router ---------- */
+const ROUTES=['home','specimen','sources','proof'];
+const TITLES={home:'Every face leaves a paper trail',specimen:'01 · Specimen',sources:'02 · Sources',proof:'03 · Proof'};
+function navigate(){
+  let r=(location.hash||'#/').replace(/^#\/?/,'').replace(/\/$/,'');
+  if(!ROUTES.includes(r))r='home';
+  ROUTES.forEach(x=>$('r-'+x).classList.toggle('on',x===r));
+  document.querySelectorAll('.tab').forEach(a=>a.classList.toggle('on',a.dataset.r===r));
+  $('routeTag').textContent='/'+r.toUpperCase();
+  document.title='SYBILWATCH — '+TITLES[r];
+  window.scrollTo({top:0});
+  replayReveals($('r-'+r));
+  if(r==='specimen'&&!state.acquired)setTimeout(acquire,420);
+  if(r==='sources'&&!state.discRendered)setTimeout(renderCandidates,140);
+  if(r==='sources'&&state.discRendered)setTimeout(()=>drawChain(false),90);
+  if(r==='proof'&&!state.custSeen){state.custSeen=true;log('certification desk opened — active exhibit: '+state.sel.handle)}
+}
+window.addEventListener('hashchange',navigate);
+
+/* ---------- custody rendering ---------- */
+function manifestHTML(){
+  const c=state.sel;
+  const url=state.tampered?c.url.replace(/(\.\w+)$/,m=>'_mutated'+m):c.url;
+  const ph=state.tampered?'58b16c02a3ee7d41':c.ph;
+  const bad=state.tampered?'diff-flash':'';
+  return `<span class="p">{</span>
+<span class="p">  </span><span class="k">"algorithm"</span><span class="p">:</span> <span class="s">"GhostFaceNet-512"</span><span class="p">,</span>
+<span class="p">  </span><span class="k">"candidate_url"</span><span class="p">:</span> <span class="s ${bad}">"${url}"</span><span class="p">,</span>
+<span class="p">  </span><span class="k">"case_id"</span><span class="p">:</span> <span class="s">"${CASE}"</span><span class="p">,</span>
+<span class="p">  </span><span class="k">"pHash"</span><span class="p">:</span> <span class="p">"0x</span><span class="${state.tampered?'s':'v-ok'} ${bad}">${ph}</span><span class="p">"</span><span class="p">,</span>
+<span class="p">  </span><span class="k">"search_id"</span><span class="p">:</span> <span class="v-id">"serpapi_lens_89f3a"</span>
+<span class="p">}</span>`;
+}
+function setVerdict(){
+  const v=$('verdict');
+  v.className='verdict '+(state.tampered?'bad':state.anchored?'ok':'draft');
+  v.innerHTML=state.tampered?'<i data-lucide="shield-alert"></i>INTEGRITY BROKEN'
+    :state.anchored?'<i data-lucide="stamp"></i>SEALED ON-CHAIN'
+    :'DRAFT — UNSEALED';
+  setNav(state.tampered?'bad':state.anchored?'ok':'idle');
+  if(window.lucide)lucide.createIcons();
+}
+function setHD(){
+  const hd=$('hd');
+  if(state.tampered){hd.textContent='HD = 16 · DIVERGENT';hd.className='hd-bad'}
+  else{hd.textContent=`HD = ${state.sel.hd} / 64 · vs specimen`;hd.className='hd-warn'}
+}
+async function updateCustody(o={}){
+  $('manifest').innerHTML=manifestHTML();
+  $('compSide').classList.toggle('side-bad',state.tampered);
+  const base=selDigest(),exp=$('dExp'),comp=$('dComp');
+  if(o.scramble){
+    const jobs=[scramble(comp,state.tampered?mutDigest():base,{diffFrom:state.tampered?base:null,step:3,
+      ok:state.tampered?'q':(state.anchored?'k':'q')})];
+    if(state.anchored){exp.className='digest';jobs.push(scramble(exp,base,{step:3,ok:'k'}))}
+    else{exp.textContent='—';exp.className='digest dim'}
+    await Promise.all(jobs);
+  }else{
+    comp.textContent=base;comp.className='digest';
+    if(state.anchored){exp.textContent=base;exp.className='digest'}else{exp.textContent='—';exp.className='digest dim'}
+  }
+  setHD();setVerdict();
+}
+
+/* ---------- step rail ---------- */
+function markStep(n){
+  const sc=$('step'+n);
+  if(!sc||sc.classList.contains('done'))return;
+  sc.classList.add('done');
+  const c=$('conn'+(n-1));if(c)c.classList.add('fill');
+}
+function resetSteps(){
+  [1,3].forEach(n=>{const s=$('step'+n);if(s)s.classList.remove('done')});
+  [1,2].forEach(n=>{const c=$('conn'+n);if(c)c.classList.remove('fill')});
+  state.tested=false;state.exported=false;
+}
+function tryStep3(){
+  if(state.signed&&state.exported&&!$('step3').classList.contains('done')){
+    markStep(3);log('case fully certified — signature + exported proof on file','ok');
+  }
+}
+
+/* ---------- evidence wall (sources) ---------- */
+function cardHTML(c){
+  const barCol=c.cls==='ok'?'var(--ink)':c.cls==='warn'?'var(--ochre)':'var(--inkmut)';
+  return `<article class="cand paper ${c.id===state.sel.id?'on':''}" data-id="${c.id}">
+    <i class="pin"></i>
+    <div class="c-top">
+      <div class="c-av"><img src="${c.img}" alt="" loading="lazy" onerror="this.onerror=null;this.src='https://picsum.photos/seed/${c.id}/96/96.jpg'"><span class="pf"><i data-lucide="${c.icon}"></i></span></div>
+      <div class="c-id">
+        <div class="c-plat">${c.plat}<span class="c-src">· ${c.src}</span></div>
+        <div class="c-handle">${c.handle}<small>${c.name}</small></div>
+      </div>
+      <span class="stamp c-verdict ${c.cls}">${c.verdict}</span>
+    </div>
+    <div class="c-metrics">
+      <div class="m"><label>COSINE DISTANCE</label><div class="m-row"><div class="m-bar"><i data-w="${Math.round(c.cos*100)}" style="background:${barCol}"></i></div><b>0.00</b></div></div>
+      <div class="m"><label>pHASH HAMMING</label><div class="m-row"><div class="m-bar"><i data-w="${Math.round(c.hd/64*100)}" style="background:${barCol}"></i></div><b>0</b><span class="m-sub">/64</span></div></div>
+    </div>
+    <div class="c-badges"><span class="b-info">${c.badge}</span><span class="b-anchor" hidden>IN EVIDENCE</span></div>
+  </article>`;
+}
+function renderCandidates(){
+  const list=CANDS.filter(c=>state.filter==='ALL'||c.cat===state.filter);
+  $('stack').innerHTML=list.map(cardHTML).join('');
+  if(window.lucide)lucide.createIcons();
+  document.querySelectorAll('.cand').forEach((el,i)=>{
+    el.addEventListener('click',()=>select(CANDS.find(c=>c.id===el.dataset.id)));
+    setTimeout(()=>{
+      el.classList.add('in');
+      el.querySelectorAll('.m-bar i').forEach(b=>b.style.width=b.dataset.w+'%');
+      const c=CANDS.find(x=>x.id===el.dataset.id);
+      ticker(el.querySelector('.m:nth-child(1) b'),c.cos,{dec:2});
+      ticker(el.querySelector('.m:nth-child(2) b'),c.hd,{dec:0});
+      setTimeout(()=>el.querySelector('.c-verdict').classList.add('show'),620);
+      /* release entrance animation so hover transform works afterwards */
+      setTimeout(()=>{el.style.opacity='1';el.classList.remove('in')},600);
+    },90+i*70);
+  });
+  const strong=list.filter(c=>c.cls==='ok').length;
+  const conf={3:0.93,2:0.61,1:0.28,0:0.07}[strong];
+  const lbl={3:'IDENTITY-REUSE CLUSTER — 3 STRONG',2:'PARTIAL CORRELATION — 2 STRONG',1:'PARTIAL CORRELATION — 1 STRONG',0:'NO ACTIVE CORRELATION'}[strong];
+  setTimeout(()=>{$('ringBar').style.width=(conf*100)+'%'},160);
+  ticker($('ringVal'),conf,{dur:900,dec:2});
+  $('ringLbl').textContent=lbl;
+  state.discRendered=true;
+  setTimeout(()=>drawChain(false),1050);
+  startSpark();
+}
+async function select(c){
+  if(state.pending||c.id===state.sel.id)return;
+  state.sel=c;state.anchored=false;state.tampered=false;state.signed=false;
+  document.querySelectorAll('.cand').forEach(el=>{
+    el.classList.toggle('on',el.dataset.id===c.id);
+    el.querySelector('.b-anchor').hidden=true;
+  });
+  const s1=$('step1');
+  s1.classList.remove('anchored','beaming');
+  const as=$('anchorState');as.textContent='NOT SEALED';as.className='schip';
+  resetSteps();
+  $('sealWrap').classList.remove('show');
+  $('filedStamp').hidden=true;$('filedStamp').classList.remove('show');
+  setBtn($('btnAnchor'),false,'SEAL EVIDENCE ON LEDGER');
+  setBtn($('btnSign'),false,'SIGN (EIP-712)');
+  $('dTx').textContent='—';$('txBlk').textContent='—';$('sigRow').hidden=true;
+  $('tAlert').hidden=true;$('tamperWash').hidden=true;$('tamperStamp').hidden=true;$('tamperStamp').classList.remove('show');
+  $('certPaper').classList.remove('rattled');
+  $('btnTamper').classList.remove('btn-p');setBtn($('btnTamper'),false,'SIMULATE TAMPERING');
+  $('certSubject').textContent=c.handle;
+  setNav('idle');
+  await updateCustody({scramble:true});
+  drawChain(true);
+  log(`exhibit pulled into case → ${c.plat.toLowerCase()} · ${c.handle} — new certificate drafted`);
+}
+
+/* ---------- the red string: full chain + travelling signal ---------- */
+const threadSvg=$('thread'),threadPath=$('threadPath'),threadSpark=$('threadSpark'),chainDots=$('chainDots'),chainRing=$('chainRing');
+let chainCur=null,chainAnim=null,sparkRun=false,sparkOff=0;
+function pinPoint(el){
+  const b=$('board').getBoundingClientRect(),r=el.getBoundingClientRect();
+  return{x:r.left-b.left+r.width/2,y:r.top-b.top+r.height/2};
+}
+function collectPts(){
+  if(window.innerWidth<1000)return null;
+  const probePin=$('probePin');
+  const cards=document.querySelectorAll('.cand');
+  if(!probePin||!cards.length)return null;
+  const pts=[{x:pinPoint(probePin).x,y:pinPoint(probePin).y}];
+  cards.forEach(el=>{
+    const p=el.querySelector('.pin');
+    if(p)pts.push({x:pinPoint(p).x,y:pinPoint(p).y,active:el.classList.contains('on')});
+  });
+  return pts;
+}
+function pathFor(pts){
+  let d=`M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for(let i=1;i<pts.length;i++){
+    const a=pts[i-1],b=pts[i];
+    const sag=16+Math.hypot(b.x-a.x,b.y-a.y)*.06;
+    d+=` Q ${((a.x+b.x)/2).toFixed(1)} ${(Math.max(a.y,b.y)+sag).toFixed(1)} ${b.x.toFixed(1)} ${b.y.toFixed(1)}`;
+  }
+  return d;
+}
+function paintChain(pts,drawIn=false){
+  const d=pathFor(pts);
+  threadPath.setAttribute('d',d);
+  threadSpark.setAttribute('d',d);
+  chainDots.innerHTML=pts.map(p=>`<circle class="joint" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3"/>`).join('');
+  const act=pts.find(p=>p.active);
+  if(act){chainRing.hidden=false;chainRing.setAttribute('cx',act.x);chainRing.setAttribute('cy',act.y)}
+  else chainRing.hidden=true;
+  if(drawIn){
+    const L=threadPath.getTotalLength();
+    threadPath.style.transition='none';
+    threadPath.style.strokeDasharray=L;threadPath.style.strokeDashoffset=L;
+    threadPath.getBoundingClientRect();
+    threadPath.style.transition='stroke-dashoffset .7s cubic-bezier(.4,0,.2,1)';
+    threadPath.style.strokeDashoffset=0;
+  }else{
+    threadPath.style.transition='none';threadPath.style.strokeDasharray='none';threadPath.style.strokeDashoffset=0;
+  }
+}
+function drawChain(animate=false){
+  const pts=collectPts();
+  if(chainAnim){cancelAnimationFrame(chainAnim);chainAnim=null}
+  if(!pts){threadSvg.hidden=true;chainCur=null;return}
+  threadSvg.hidden=false;
+  if(!chainCur||!animate||chainCur.length!==pts.length){chainCur=pts;paintChain(chainCur,true);return}
+  const from=chainCur.map(p=>({...p})),t0=performance.now(),D=340;
+  (function f(now){
+    const p=Math.min(1,(now-t0)/D),e=1-Math.pow(1-p,3);
+    chainCur=from.map((fp,i)=>({x:fp.x+(pts[i].x-fp.x)*e,y:fp.y+(pts[i].y-fp.y)*e,active:pts[i].active}));
+    paintChain(chainCur);
+    if(p<1)chainAnim=requestAnimationFrame(f);
+  })(t0);
+}
+let rszT;window.addEventListener('resize',()=>{clearTimeout(rszT);rszT=setTimeout(()=>drawChain(false),120)});
+/* signal pulse travelling along the thread */
+function startSpark(){
+  if(sparkRun)return;sparkRun=true;
+  requestAnimationFrame(function step(){
+    if(threadSvg.hidden||!chainCur){sparkRun=false;return}
+    const L=threadPath.getTotalLength();
+    sparkOff-=2.4;
+    const cyc=L+80;
+    if(sparkOff<-cyc)sparkOff=0;
+    threadSpark.style.strokeDasharray=`26 ${cyc}`;
+    threadSpark.style.strokeDashoffset=sparkOff;
+    requestAnimationFrame(step);
+  });
+}
+
+/* ---------- ledger sealing ---------- */
+ $('btnAnchor').addEventListener('click',()=>{
+  if(state.pending)return;
+  if(state.tampered){toast('warn','SEALING BLOCKED — the evidence is tampered. Restore it first.');shake($('btnAnchor'));log('seal aborted — integrity violation active','warn');return}
+  if(state.anchored){toast('ok','Already sealed at block #'+state.block);return}
+  state.pending=true;
+  setBtn($('btnAnchor'),true,'WRITING TO LEDGER…');
+  $('step1').classList.add('beaming');
+  const as=$('anchorState');as.textContent='PENDING — MEMPOOL…';as.className='schip';
+  log('tx submitted — eip712(EvidenceAnchor) → local ledger @31337');
+  setTimeout(async()=>{
+    state.pending=false;state.anchored=true;state.block=5;
+    $('step1').classList.remove('beaming');
+    $('step1').classList.add('anchored');
+    $('txBlk').textContent='5';
+    $('dTx').textContent=txHash();
+    as.textContent='SEALED · BLOCK #5';as.className='schip ok';
+    setBtn($('btnAnchor'),true,'SEALED — BLOCK #5');
+    await updateCustody({scramble:true});
+    $('sealWrap').classList.add('show');                        /* notary seal slams */
+    $('filedStamp').hidden=false;$('filedDate').textContent=new Date().toISOString().slice(0,10);
+    $('filedStamp').classList.add('show');
+    const chip=document.querySelector('.cand.on .b-anchor');if(chip)chip.hidden=false;
+    markStep(1);
+    setNav('ok');
+    log('tx mined — block #5 · gas 0 · 1 confirmation','ok');
+    toast('ok','EVIDENCE SEALED — block #5 · '+txHash().slice(0,14)+'…');
+  },1900);
+});
+
+/* ---------- tamper climax ---------- */
+ $('btnTamper').addEventListener('click',async()=>{
+  if(state.pending)return;
+  if(!state.anchored){toast('warn','Nothing to tamper with — seal the evidence first.');shake($('btnTamper'));return}
+  if(!state.tampered){
+    state.tampered=true;
+    flashRed();                                                  /* screen-edge crimson flash */
+    const grid=document.querySelector('.cust-grid');
+    grid.classList.add('shake');setTimeout(()=>grid.classList.remove('shake'),380);
+    $('certPaper').classList.add('rattled');
+    $('tAlert').hidden=false;$('tamperWash').hidden=false;
+    $('tamperStamp').hidden=false;$('tamperStamp').classList.add('show');
+    $('filedStamp').hidden=true;$('filedStamp').classList.remove('show');
+    $('btnTamper').classList.add('btn-p');setBtn($('btnTamper'),false,'RESTORE VERIFIED STATE');
+    setBtn($('btnAnchor'),true,'BLOCKED — INTEGRITY VIOLATION');
+    const as=$('anchorState');as.textContent='VIOLATION';as.className='schip bad';
+    await scramble($('dComp'),mutDigest(),{diffFrom:selDigest(),step:3,ok:'q'});
+    setHD();setVerdict();
+    log('!! unauthorized byte mutation — candidate_url rewritten','alert');
+    log('!! recomputed digest diverges from ledger anchor (avalanche effect)','alert');
+    toast('alert','TAMPER DETECTED — the fingerprint no longer matches');
+  }else{
+    state.tampered=false;
+    $('tAlert').hidden=true;$('tamperWash').hidden=true;$('tamperStamp').hidden=true;$('tamperStamp').classList.remove('show');
+    $('certPaper').classList.remove('rattled');
+    $('btnTamper').classList.remove('btn-p');setBtn($('btnTamper'),false,'SIMULATE TAMPERING');
+    setBtn($('btnAnchor'),true,'SEALED — BLOCK #5');
+    setBtn($('btnSign'),state.signed?true:false,'SIGN (EIP-712)');
+    const as=$('anchorState');as.textContent='SEALED · BLOCK #5';as.className='schip ok';
+    await scramble($('dComp'),selDigest(),{step:3,ok:'k'});
+    setHD();setVerdict();
+    markStep(2);                                                 /* stress test passed */
+    const st=$('tamperStamp');st.textContent='RE-VERIFIED';st.className='stamp-big ok';
+    st.hidden=false;st.classList.add('show');
+    setTimeout(()=>{st.classList.remove('show');st.hidden=true;st.className='stamp-big bad';st.textContent='TAMPERED'},1700);
+    log('stress test passed — custody restored, digest parity re-established','ok');
+    toast('ok','INTEGRITY RESTORED — fingerprint matches ledger anchor');
+  }
+});
+
+/* ---------- EIP-712 ---------- */
+function jhl(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/"([^"]+)"(\s*:)/g,'<span class="k">"$1"</span>$2')
+  .replace(/(:\s*)"([^"]*)"/g,'$1<span class="s">"$2"</span>')}
+function fillEip(){
+  $('mDom').innerHTML=jhl(JSON.stringify({name:'SybilWatch Custody',version:'1',chainId:31337,
+    verifyingContract:'0x0000000000000000000000000000000000000000'},null,2));
+  $('mMsg').innerHTML=jhl(JSON.stringify({case_id:CASE,candidate_url:state.sel.url,
+    pHash:'0x'+state.sel.ph,subject_digest:'0x'+selDigest().slice(0,20)+'…',
+    issued_at:new Date().toISOString()},null,2));
+}
+const mOv=$('mOv');
+ $('btnSign').addEventListener('click',()=>{
+  if(state.tampered){toast('warn','SIGNING LOCKED — resolve the integrity violation first');return}
+  fillEip();mOv.classList.add('open');
+});
+ $('mClose').addEventListener('click',()=>mOv.classList.remove('open'));
+ $('mCancel').addEventListener('click',()=>mOv.classList.remove('open'));
+mOv.addEventListener('click',e=>{if(e.target===mOv)mOv.classList.remove('open')});
+window.addEventListener('keydown',e=>{if(e.key==='Escape')mOv.classList.remove('open')});
+ $('mSign').addEventListener('click',()=>{
+  mOv.classList.remove('open');state.signed=true;
+  $('sigRow').hidden=false;
+  scramble($('dSig'),'0x'+digest64('sig:'+state.sel.id+utc()).slice(0,62),{step:3});
+  setBtn($('btnSign'),true,'SIGNATURE ON FILE');
+  log('eip-712 typed-data signature produced — 65 bytes','ok');
+  toast('ok','SIGNATURE ACCEPTED — custody wallet 0x9C4E…F2A1');
+  tryStep3();
+});
+
+/* ---------- proof card export (paper-styled PNG + QR) ---------- */
+async function drawQR(ctx,px,py,size,text){
+  try{
+    if(window.QRCode&&QRCode.toCanvas){
+      const qc=document.createElement('canvas');
+      await QRCode.toCanvas(qc,text,{width:size*2,margin:1,color:{dark:'#1C180F',light:'#E9E4D4'}});
+      ctx.drawImage(qc,px,py,size,size);return;
+    }
+  }catch(e){}
+  const r=mulberry32(fnv(text)),m=25,cell=size/m;
+  ctx.fillStyle='#E9E4D4';ctx.fillRect(px,py,size,size);ctx.fillStyle='#1C180F';
+  const inF=(i,j)=>(i<7&&j<7)||(i<7&&j>=m-7)||(i>=m-7&&j<7);
+  for(let i=0;i<m;i++)for(let j=0;j<m;j++)if(!inF(i,j)&&r()<.45)ctx.fillRect(px+j*cell,py+i*cell,cell+.4,cell+.4);
+  const finder=(fx,fy)=>{ctx.fillRect(fx,fy,cell*7,cell*7);ctx.fillStyle='#E9E4D4';ctx.fillRect(fx+cell,fy+cell,cell*5,cell*5);ctx.fillStyle='#1C180F';ctx.fillRect(fx+cell*2,fy+cell*2,cell*3,cell*3)};
+  finder(px,py);finder(px+size-cell*7,py);finder(px,py+size-cell*7);
+}
+async function renderProofCard(withImg=true){
+  const W=760,H=1000,S=2,c=state.sel,base=selDigest(),cur=state.tampered?mutDigest():base;
+  const anchored=state.anchored;
+  const cv=document.createElement('canvas');cv.width=W*S;cv.height=H*S;
+  const x=cv.getContext('2d');x.scale(S,S);x.textBaseline='alphabetic';x.textAlign='left';
+  const M=48;
+  x.fillStyle='#E9E4D4';x.fillRect(0,0,W,H);
+  x.strokeStyle='#C4BBA0';x.lineWidth=1.5;x.strokeRect(18.5,18.5,W-37,H-37);
+  x.strokeStyle='#1C180F';x.lineWidth=2.5;
+  [[20,20,1,1],[W-20,20,-1,1],[20,H-20,1,-1],[W-20,H-20,-1,-1]].forEach(([cx,cy,dx,dy])=>{
+    x.beginPath();x.moveTo(cx+dx*24,cy);x.lineTo(cx,cy);x.lineTo(cx,cy+dy*24);x.stroke();
+  });
+  x.fillStyle='#C43A22';x.font='700 14px "IBM Plex Mono",monospace';x.fillText('SYBILWATCH — CASE FILE',M,72);
+  x.fillStyle='#6E6550';x.font='500 9.5px "IBM Plex Mono",monospace';x.fillText('FORENSIC PROOF CARD · FORM 40-X · RENDERED LOCALLY',M,90);
+  x.textAlign='right';
+  x.fillStyle='#1C180F';x.font='600 13px "IBM Plex Mono",monospace';x.fillText(CASE,W-M,72);
+  x.fillStyle='#6E6550';x.font='500 9px "IBM Plex Mono",monospace';x.fillText('DOCKET: BIOMETRIC PROVENANCE',W-M,90);
+  x.textAlign='left';
+  x.strokeStyle='#C4BBA0';x.beginPath();x.moveTo(M,110);x.lineTo(W-M,110);x.stroke();
+  const vTxt=state.tampered?'TAMPERED — COMPROMISED':anchored?'SEALED ON-CHAIN':'DRAFT — UNSEALED';
+  const vCol=state.tampered?'#C43A22':anchored?'#1E7A4A':'#B07C10';
+  x.save();x.translate(M+130,140);x.rotate(-0.06);
+  x.strokeStyle=vCol;x.lineWidth=2.5;x.strokeRect(-125,-15,250,30);
+  x.fillStyle=vCol;x.font='700 12px "IBM Plex Mono",monospace';x.textAlign='center';x.fillText(vTxt,0,5);x.restore();x.textAlign='left';
+  if(withImg){
+    try{
+      x.drawImage($('probe'),M,186,150,150);
+      x.strokeStyle='#1C180F';x.lineWidth=2;
+      [[M,186,1,1],[M+150,186,-1,1],[M,336,1,-1],[M+150,336,-1,-1]].forEach(([cx,cy,dx,dy])=>{
+        x.beginPath();x.moveTo(cx+dx*14,cy);x.lineTo(cx,cy);x.lineTo(cx,cy+dy*14);x.stroke();
+      });
+    }catch(e){withImg=false}
+  }
+  let fy=206;const fx=M+(withImg?176:0);
+  const row=(k,v,col='#1C180F')=>{x.fillStyle='#6E6550';x.font='500 8.5px "IBM Plex Mono",monospace';x.fillText(k,fx,fy);x.fillStyle=col;x.font='500 11px "IBM Plex Mono",monospace';x.fillText(v,fx,fy+15);fy+=32};
+  row('MATCH — '+c.plat,c.handle+(c.name||''),c.cls==='ok'?'#1E7A4A':'#B07C10');
+  row('COSINE / HAMMING',c.cos.toFixed(2)+'  ·  HD '+c.hd+'/64',state.tampered?'#C43A22':'#1C180F');
+  row('pHash-64','0x'+(state.tampered?'58b16c02a3ee7d41':c.ph),state.tampered?'#C43A22':'#1E7A4A');
+  row('MODEL / RESOLUTION','GhostFaceNet-512 · 1080×1080 · Q 0.97');
+  fy=Math.max(fy,382)+6;
+  x.strokeStyle='#C4BBA0';x.beginPath();x.moveTo(M,fy);x.lineTo(W-M,fy);x.stroke();fy+=28;
+  x.fillStyle='#6E6550';x.font='500 8.5px "IBM Plex Mono",monospace';
+  x.fillText('SHA-256 (RFC 8785 CANONICAL BYTES) — '+(state.tampered?'TAMPERED — DIVERGENT CHARS MARKED':'SEALED'),M,fy);fy+=17;
+  x.font='500 10.5px "IBM Plex Mono",monospace';
+  for(let rI=0;rI<2;rI++){
+    for(let i=0;i<32;i++){
+      const idx=rI*32+i,ch=cur[idx],diff=state.tampered&&base[idx]!==ch;
+      x.fillStyle=diff?'#C43A22':anchored?'#1E7A4A':'#1C180F';
+      if(diff)x.fillRect(M+i*6.35-1,fy-9,6.4,12);
+      x.fillText(ch,M+i*6.35,fy);
+    }
+    fy+=17;
+  }
+  fy+=14;
+  const tx=txHash();
+  x.fillStyle='#6E6550';x.font='500 8.5px "IBM Plex Mono",monospace';x.fillText('ANCHOR TX / BLOCK',M,fy);fy+=15;
+  x.fillStyle='#1C180F';x.font='500 10px "IBM Plex Mono",monospace';
+  x.fillText(anchored?tx.slice(0,42):'— not sealed —',M,fy);fy+=15;
+  if(anchored)x.fillText(tx.slice(42)+'   ·   BLOCK #5 · GAS 0',M,fy);
+  fy+=24;
+  const vs=`sybilwatch://verify/31337/${tx.slice(0,18)}/${base.slice(0,12)}`;
+  await drawQR(x,M,H-248,150,vs);
+  x.fillStyle='#6E6550';x.font='500 8.5px "IBM Plex Mono",monospace';
+  x.fillText('OFFLINE VERIFICATION',M+174,H-248+12);
+  x.fillStyle='#1C180F';x.font='500 9.5px "IBM Plex Mono",monospace';
+  const lines=[vs.slice(0,46),vs.slice(46),'','Manifest: RFC 8785 · Digest: SHA-256','Signature: EIP-712 · Chain: 31337 (local)'];
+  lines.forEach((l,i)=>x.fillText(l,M+174,H-228+i*16));
+  x.strokeStyle='#C4BBA0';x.beginPath();x.moveTo(M,H-64);x.lineTo(W-M,H-64);x.stroke();
+  x.fillStyle='#988D72';x.font='400 9px "IBM Plex Mono",monospace';
+  x.fillText('Every face leaves a paper trail. · '+new Date().toISOString(),M,H-42);
+  return new Promise((res,rej)=>cv.toBlob(b=>b?res(URL.createObjectURL(b)):rej(new Error('encode')),'image/png'));
+}
+ $('btnExport').addEventListener('click',async()=>{
+  if(state.pending){toast('warn','EXPORT BLOCKED — sealing transaction in progress');return}
+  const b=$('btnExport');setBtn(b,true,'RENDERING…');
+  try{
+    let url;
+    try{url=await renderProofCard(true)}
+    catch(err){url=await renderProofCard(false)}
+    const a=document.createElement('a');a.href=url;a.download='sybilwatch_proof_'+CASE+'.png';a.click();
+    toast('ok','PROOF CARD EXPORTED — '+a.download);
+    log('proof card rendered → '+a.download,'ok');
+    state.exported=true;tryStep3();
+  }catch(err){toast('alert','EXPORT FAILED — '+err.message)}
+  setBtn(b,false,'EXPORT CARD');
+});
+
+/* ---------- intake pipeline choreography ---------- */
+function setProgress(pct){
+  const p=$('pprog');p.style.width=pct+'%';
+  $('p-progress')&&0;
+  document.querySelector('.p-progress').classList.toggle('full',pct>=100);
+}
+function setCheck(id,mode,tech){
+  const el=$(id);
+  el.className='ck '+(mode==='busy'?'busy':mode==='done'?'done':'');
+  el.querySelector('.ck-ic').innerHTML=mode==='busy'?'<span class="spin"></span>'
+    :mode==='done'?'<svg class="tick" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>':'';
+  if(tech!==undefined)el.querySelector('.t').textContent=tech;
+}
+const frame=$('frame'),probe=$('probe');
+function develop(){
+  probe.classList.remove('develop');void probe.offsetWidth;probe.classList.add('develop');
+}
+let acqTimers=[];
+function acquire(){
+  acqTimers.forEach(clearTimeout);acqTimers=[];
+  frame.classList.remove('acquiring','locked');void frame.offsetWidth;
+  $('stampAcq').classList.remove('show');
+  $('afterCk').classList.remove('show');
+  ['ck1','ck2','ck3','ck4'].forEach(id=>setCheck(id,'idle',''));
+  setProgress(0);
+  $('pipeStat').innerHTML='<span class="dot verm pulse"></span>RUNNING';
+  frame.classList.add('acquiring');
+  const seq=[
+    [0,   ()=>setCheck('ck1','busy','RETINAFACE-RFB · SCANNING…')],
+    [280, ()=>{setCheck('ck1','done','FACE FOUND · CONFIDENCE 0.98');setProgress(25);setCheck('ck2','busy','MEASURING SHARPNESS…')}],
+    [560, ()=>{setCheck('ck2','done','QUALITY 0.97 / 1.00 — SHARP ENOUGH');setProgress(50);setCheck('ck3','busy','GHOSTFACENET FORWARD PASS…')}],
+    [820, ()=>frame.classList.add('locked')],
+    [900, ()=>$('tRes').textContent='1080 × 1080'],
+    [1020,()=>{setCheck('ck3','done','512 NUMBERS WRITTEN · L2-NORMALISED');setProgress(75);setCheck('ck4','busy','SEARCHING SOCIAL NETWORKS…')}],
+    [1060,()=>{ticker($('tQ'),0.97,{dec:2});$('polQ').textContent='Q 0.97'}],
+    [1240,()=>scramble($('tPh'),PH_BASE,{step:22})],
+    [1300,()=>drawSpark()],
+    [1500,()=>$('stampAcq').classList.add('show')],
+    [1750,()=>{
+      setCheck('ck4','done','5 SOURCES CHECKED · 3 STRONG MATCHES');
+      setProgress(100);
+      $('pipeStat').innerHTML='<span class="dot seal"></span>LOCKED · Q 0.97';
+      $('afterCk').classList.add('show');
+      state.acquired=true;syncHero();
+      log('specimen acquired — 5 landmarks · 512-d signature · web search complete','ok');
+      toast('ok','Face analysed — 3 strong matches. Open SOURCES.');
+    }],
+  ];
+  seq.forEach(([t,fn])=>acqTimers.push(setTimeout(fn,t)));
+}
+ $('btnReacq').addEventListener('click',()=>{acquire();toast('ok','Re-running the intake pipeline…')});
+ $('btnViewSources').addEventListener('click',()=>{location.hash='#/sources'});
+
+/* ---------- file ingest ---------- */
+frame.addEventListener('click',()=>fileIn.click());
+ $('upZone').addEventListener('click',()=>fileIn.click());
+['dragover','dragenter'].forEach(ev=>{
+  frame.addEventListener(ev,e=>{e.preventDefault();frame.classList.add('drag')});
+  $('upZone').addEventListener(ev,e=>{e.preventDefault();$('upZone').classList.add('drag')});
+});
+['dragleave','drop'].forEach(ev=>{
+  frame.addEventListener(ev,e=>{e.preventDefault();frame.classList.remove('drag')});
+  $('upZone').addEventListener(ev,e=>{e.preventDefault();$('upZone').classList.remove('drag')});
+});
+ $('upZone').addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))ingestFile(f)});
+frame.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))ingestFile(f)});
+const fileIn=document.createElement('input');fileIn.type='file';fileIn.accept='image/*';fileIn.hidden=true;
+document.body.appendChild(fileIn);
+fileIn.addEventListener('change',e=>{const f=e.target.files[0];if(f)ingestFile(f);e.target.value=''});
+function ingestFile(f){
+  const rd=new FileReader();
+  rd.onload=()=>{
+    probe.removeAttribute('crossorigin');probe.dataset.f='1';probe.src=rd.result;
+    frame.classList.remove('locked','acquiring');
+    log('local file ingested — '+f.name+' ('+(f.size/1024).toFixed(1)+' KB)');
+    location.hash='#/specimen';
+    setTimeout(acquire,400);
+  };
+  rd.readAsDataURL(f);
+}
+probe.addEventListener('load',()=>{frame.classList.add('has-img');develop()});
+function syncHero(){
+  $('upImg').src=probe.src;$('boardProbe').src=probe.src;
+  $('upZone').classList.toggle('has-img',frame.classList.contains('has-img'));
+  $('upReady').hidden=!frame.classList.contains('has-img');
+  if(state.discRendered)drawChain(false);
+}
+
+/* ---------- hero & docket wiring ---------- */
+function goSpec(){location.hash='#/specimen';if(state.acquired)toast('ok','Specimen already analysed — re-run the scan or open SOURCES.')}
+ $('btnStart').addEventListener('click',goSpec);
+ $('btnStart2').addEventListener('click',goSpec);
+ $('btnHow').addEventListener('click',()=>$('how').scrollIntoView({behavior:'smooth'}));
+ $('btnDemo').addEventListener('click',()=>{
+  probe.removeAttribute('crossorigin');delete probe.dataset.f;
+  probe.src='https://i.pravatar.cc/480?img=12';
+  frame.classList.remove('locked','acquiring');
+  location.hash='#/specimen';
+  setTimeout(acquire,450);
+});
+ $('btnToProof').addEventListener('click',()=>{
+  if(state.pending)return;
+  location.hash='#/proof';
+  toast('ok','Exhibit locked in: '+state.sel.handle+' — follow the three steps on the desk.');
+});
+[['drow1','#/specimen'],['drow2','#/sources'],['drow3','#/proof']].forEach(([id,h])=>{
+  $(id).addEventListener('click',()=>{location.hash=h});
+});
+
+/* ---------- face-signature chart (ink on paper) ---------- */
+let V512=null,sparkPts=[],geom=null;
+function genVector(){
+  const r=mulberry32(0x5EED),v=new Array(512);
+  for(let i=0;i<512;i++){const t=i/511;
+    v[i]=Math.sin(t*13.8+1.2)*0.42+Math.sin(t*35.7+0.4)*0.2+Math.sin(t*71.3+2.1)*0.1+(r()-0.5)*0.5;
+  }
+  const bump=(c2,w,h)=>{for(let i=0;i<512;i++){const t=i/511;v[i]+=h*Math.exp(-((t-c2)**2)/(2*w*w))}};
+  bump(0.31,0.035,0.85);bump(0.68,0.05,-0.7);bump(0.87,0.02,0.55);
+  let s=0;for(const x of v)s+=x*x;s=Math.sqrt(s)||1;
+  return v.map(x=>x/s);
+}
+function drawSpark(){
+  if(!V512)V512=genVector();
+  const W=320,H=86,pad=8,N=64;
+  sparkPts=[];
+  for(let i=0;i<N;i++){let a=0;for(let j=0;j<8;j++)a+=V512[i*8+j];sparkPts.push(a/8)}
+  const mx=Math.max(...sparkPts.map(Math.abs),0.12);
+  const X=i=>pad+i*(W-2*pad)/(N-1),Y=val=>H/2-val/mx*(H/2-pad);
+  geom={X,Y,W,H,pad};
+  let d=`M ${X(0).toFixed(1)} ${Y(sparkPts[0]).toFixed(1)}`;
+  for(let i=1;i<N-1;i++){const cx=(X(i)+X(i+1))/2,cy=(Y(sparkPts[i])+Y(sparkPts[i+1]))/2;
+    d+=` Q ${X(i).toFixed(1)} ${Y(sparkPts[i]).toFixed(1)} ${cx.toFixed(1)} ${cy.toFixed(1)}`}
+  d+=` L ${X(N-1).toFixed(1)} ${Y(sparkPts[N-1]).toFixed(1)}`;
+  let grid='',ticks='';
+  for(let g=1;g<4;g++){const gy=pad+g*(H-2*pad)/4;grid+=`<line x1="${pad}" y1="${gy.toFixed(1)}" x2="${W-pad}" y2="${gy.toFixed(1)}" stroke="rgba(28,24,15,.09)"/>`}
+  [0,128,256,384,511].forEach(n=>{
+    const tx=X(n/511*(N-1));
+    ticks+=`<line x1="${tx.toFixed(1)}" y1="${H-pad}" x2="${tx.toFixed(1)}" y2="${H-pad+3}" stroke="rgba(28,24,15,.45)"/>
+            <text x="${tx.toFixed(1)}" y="${H-0.5}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="6.5" fill="#988D72">${n}</text>`;
+  });
+  const svg=$('spark');
+  svg.innerHTML=`${grid}
+    <line x1="${pad}" y1="${H/2}" x2="${W-pad}" y2="${H/2}" stroke="rgba(28,24,15,.35)" stroke-dasharray="2 4"/>
+    <path d="${d} L ${X(N-1).toFixed(1)} ${H/2} L ${X(0).toFixed(1)} ${H/2} Z" fill="rgba(28,24,15,.07)"/>
+    <path id="spk" d="${d}" fill="none" stroke="#1C180F" stroke-width="1.4"/>
+    ${ticks}
+    <line id="spkX" x1="0" y1="${pad}" x2="0" y2="${H-pad}" stroke="#C43A22" stroke-width="1.2" opacity="0"/>
+    <circle id="spkD" r="2.4" fill="#C43A22" opacity="0"/>`;
+  const p=svg.querySelector('#spk'),L=p.getTotalLength();
+  p.style.strokeDasharray=L;p.style.strokeDashoffset=L;
+  p.getBoundingClientRect();
+  p.style.transition='stroke-dashoffset 1s cubic-bezier(.4,0,.2,1)';
+  p.style.strokeDashoffset=0;
+  let mu=0;for(const v of V512)mu+=v;mu/=512;
+  let sd=0;for(const v of V512)sd+=(v-mu)**2;sd=Math.sqrt(sd/512);
+  let nn=0;for(const v of V512)nn+=v*v;
+  $('sparkStats').innerHTML=`<span>μ ${(mu>=0?'+':'')+mu.toFixed(4)}</span><span>σ ${sd.toFixed(4)}</span><span>‖v‖₂ ${Math.sqrt(nn).toFixed(4)}</span><span style="color:var(--inkmut)">512 dims</span>`;
+}
+const sparkSvg=$('spark'),sparkTip=$('sparkTip');
+sparkSvg.addEventListener('mousemove',e=>{
+  if(!geom||!sparkPts.length)return;
+  const r=sparkSvg.getBoundingClientRect();
+  const fx=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width));
+  const idx=Math.min(511,Math.round(fx*511));
+  const cx=geom.pad+fx*(geom.W-2*geom.pad);
+  const xL=sparkSvg.querySelector('#spkX'),d=sparkSvg.querySelector('#spkD');
+  xL.setAttribute('x1',cx);xL.setAttribute('x2',cx);xL.setAttribute('opacity',.8);
+  const pIdx=Math.min(sparkPts.length-1,Math.round(fx*(sparkPts.length-1)));
+  d.setAttribute('cx',cx);d.setAttribute('cy',geom.Y(sparkPts[pIdx]));d.setAttribute('opacity',1);
+  sparkTip.textContent=`d[${String(idx).padStart(3,'0')}]  ${(V512[idx]>=0?'+':'')+V512[idx].toFixed(4)}`;
+  const card=sparkSvg.parentElement,rr=card.getBoundingClientRect();
+  sparkTip.style.left=Math.min(rr.width-92,e.clientX-rr.left+14)+'px';
+  sparkTip.style.top=(e.clientY-rr.top-28)+'px';
+  sparkTip.style.opacity=1;
+});
+sparkSvg.addEventListener('mouseleave',()=>{
+  const xL=sparkSvg.querySelector('#spkX'),d=sparkSvg.querySelector('#spkD');
+  if(xL)xL.setAttribute('opacity',0);if(d)d.setAttribute('opacity',0);
+  sparkTip.style.opacity=0;
+});
+
+/* ---------- filter pills ---------- */
+document.querySelectorAll('.pill').forEach(p=>p.addEventListener('click',()=>{
+  if(p.dataset.f===state.filter)return;
+  state.filter=p.dataset.f;
+  document.querySelectorAll('.pill').forEach(x=>x.classList.toggle('on',x===p));
+  renderCandidates();
+  log('sources filter → '+p.textContent.trim().split(/\s+/)[0]);
+}));
+
+/* ---------- init ---------- */
+function init(){
+  if(window.lucide)lucide.createIcons();
+  $('certSubject').textContent=state.sel.handle;
+  updateCustody();
+  log('case file opened — '+CASE+' · biometric provenance');
+  log('local ledger attached — chain 31337 · block 4 · gas 0');
+  navigate();
+  setTimeout(()=>toast('ok','Case file ready — drop a photo on the home page, or just press OPEN A CASE.'),900);
+}
+init();
+</script>
+</body>
+</html>

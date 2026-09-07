@@ -7,6 +7,8 @@
    only scopes them to the ProofCard context. No new tokens. */
 
 .proof-cert { position: relative; }
+.proof-form-head { display: flex; justify-content: space-between; gap: 14px; padding: 13px 20px 10px; border-bottom: 3px double var(--hairp); color: var(--inkdim); font: 600 8px var(--mono); letter-spacing: .14em; }
+.proof-form-head span:last-child { color: var(--vermd); white-space: nowrap; }
 .proof-card.tampered .proof-cert { animation: shake .34s cubic-bezier(.36,.07,.19,.97); }
 
 .proof-manifest {

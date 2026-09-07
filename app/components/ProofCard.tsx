@@ -21,6 +21,7 @@ export function ProofCard({ selected, phash, searchId, anchor, verification, wor
         <path d="M46 60 l10 10 l20 -20" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </div>
+    <div className="proof-form-head"><span>FORM 40-X · CERTIFICATE OF BIOMETRIC INTEGRITY</span><span>DOCKET / PROOF</span></div>
     <div className="card-kicker"><span>03 / PROOF</span><span className={`card-status ${anchor ? "sealed" : ""}`}>{anchor ? "SEALED" : "DRAFT"}</span></div>
     <h2>{anchor ? "Custody receipt" : "Make the evidence verifiable"}</h2>
     <p className="proof-intro">Only the source URL, search identifier, platform, and face fingerprint are committed. The original image buffer is not persisted on-chain.</p>

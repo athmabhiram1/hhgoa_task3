@@ -30,7 +30,9 @@
 .route-single { max-width: 880px; }
 .route-single .specimen-wrap .indexcard { margin: 14px 0 0; }
 
-.specimen-panel { margin-top: 34px; }
+.specimen-panel { margin-top: 0; }
+.pipeline-action { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--hair); color: var(--bonemut); font: 500 9px var(--mono); letter-spacing: .1em; text-align: center; }
+.pipeline-action .btn { font-size: 10px; }
 .phbits { display: grid; grid-template-columns: repeat(32, 1fr); gap: 2px; margin-top: 8px; }
 .phbits i { display: block; height: 8px; background: rgba(28,24,15,.12); border-radius: 1px; }
 .phbits i[data-one="1"] { background: var(--ink); }

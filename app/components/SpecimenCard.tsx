@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, DragEvent, ReactElement, useRef } from "react";
+import { ArrowRight } from "lucide-react";
 import { phashHexToBin } from "../lib/phash";
 import { shorten, type AnalysisStage } from "./shared";
 
@@ -26,6 +27,13 @@ export function SpecimenCard({ file, previewUrl, embeddingSize, quality, phash, 
   const doneCount = checks.filter((c) => c.state === "done").length;
   const progress = analysisStage === "detecting" ? 12 : analysisStage === "encoding" ? 75 : analysisStage === "searching" ? 75 : analysisStage === "complete" ? 100 : doneCount * 25;
   const pipelineStatus = analysisStage === "detecting" ? "DETECTING FACE" : analysisStage === "encoding" ? "BUILDING SIGNATURE" : analysisStage === "searching" ? "SEARCHING WEB" : analysisStage === "complete" ? "COMPLETE" : analysisStage === "error" ? "FAILED" : file ? "READY" : "WAITING";
+  const checkDescriptions: Record<string, string> = {
+    "01": "We found a face in the photo and measured exactly where it is.",
+    "02": "Blurry or tiny photos give bad matches — we check first.",
+    "03": "The face is now described by numbers — its comparison signature.",
+    "04": "Looking for this same face on the configured public provider.",
+  };
+  const hasSearchResult = analysisStage === "complete" && Boolean(searchId);
   return <article className="evidence-card specimen-card" id="intake">
     <div className="specimen-wrap">
     <i className="tape tl" aria-hidden="true" /><i className="tape tr" aria-hidden="true" />
@@ -65,7 +73,7 @@ export function SpecimenCard({ file, previewUrl, embeddingSize, quality, phash, 
     <div className="panel specimen-panel" aria-live="polite">
       <div className="p-head"><span>INTAKE PIPELINE — LIVE</span><span className={`st pipeline-status ${analysisStage === "error" ? "error" : ""}`}>{pipelineStatus}</span></div>
       <div className={`p-progress${progress >= 100 ? " full" : ""}`}><i style={{ width: `${progress}%` }} /></div>
-      <div className="p-body"><ul className="cklist">{checks.map((c) => <li className={`ck ${c.state === "idle" ? "" : c.state}`} key={c.n}><span className="ck-n">{c.n}</span><div className="ck-tx"><b>{c.t}</b><span className="t">{c.sub}</span></div><span className="ck-ic">{c.state === "busy" ? <span className="spin" /> : c.state === "done" ? <svg className="tick" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg> : null}</span></li>)}</ul></div>
+      <div className="p-body"><ul className="cklist">{checks.map((c) => <li className={`ck ${c.state === "idle" ? "" : c.state}`} key={c.n}><span className="ck-n">{c.n}</span><div className="ck-tx"><b>{c.t}</b><span className="ck-description">{checkDescriptions[c.n]}</span><span className="t">{c.sub}</span></div><span className="ck-ic">{c.state === "busy" ? <span className="spin" /> : c.state === "done" ? <svg className="tick" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg> : null}</span></li>)}</ul><div className="pipeline-action">{hasSearchResult ? <button type="button" className="btn btn-p btn-w btn-lg" onClick={() => { window.location.hash = "#/sources"; }}>VIEW THE SOURCES <ArrowRight size={14} /></button> : <span>{analysisStage === "complete" ? "NO PUBLIC SOURCES RETURNED" : "THE PIPELINE WILL SHOW EACH LIVE RESPONSE HERE"}</span>}</div></div>
     </div>
     </div></div>
     <div className="indexcard" aria-hidden="true">
